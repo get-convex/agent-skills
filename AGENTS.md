@@ -25,13 +25,13 @@ Skills from [get-convex/convex-agent-plugins](https://github.com/get-convex/conv
 
 | Skill | Purpose |
 |-------|---------|
-| `convex-quickstart` | New project setup with schema, auth, CRUD |
-| `schema-builder` | Database schema design, validators, indexes |
-| `function-creator` | Queries, mutations, actions with validation |
-| `auth-setup` | Authentication, user management, access control |
-| `migration-helper` | Schema migrations, backfills, data transforms |
-| `components-guide` | Convex components for feature encapsulation |
-| `convex-helpers-guide` | convex-helpers utilities and patterns |
+| `convex_quickstart` | New project setup with schema, auth, CRUD |
+| `convex_schema_builder` | Database schema design, validators, indexes |
+| `convex_function_creator` | Queries, mutations, actions with validation |
+| `convex_auth_setup` | Authentication, user management, access control |
+| `convex_migration_helper` | Schema migrations, backfills, data transforms |
+| `convex_components_guide` | Convex components for feature encapsulation |
+| `convex_helpers_guide` | convex-helpers utilities and patterns |
 
 ## Code Examples
 
