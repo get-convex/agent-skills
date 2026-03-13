@@ -1,6 +1,9 @@
 # Clerk
 
-Official docs: https://docs.convex.dev/auth/clerk
+Official docs:
+
+- https://docs.convex.dev/auth/clerk
+- https://clerk.com/docs/guides/development/integrations/databases/convex
 
 Use this when the app already uses Clerk or the user wants Clerk's hosted auth features.
 
@@ -12,18 +15,21 @@ Use this when the app already uses Clerk or the user wants Clerk's hosted auth f
    - Next.js
    - TanStack Start
 3. Ask whether the user wants local-only setup or production-ready setup now
-4. Read the matching section of the official Convex and Clerk guide
-5. Install the correct Clerk package for the framework
-6. Configure `convex/auth.config.ts` with the Clerk issuer domain
-7. Set the Clerk environment variables for the frontend and backend
-8. Wrap the app with `ClerkProvider` and `ConvexProviderWithClerk`
-9. Gate Convex-backed UI with Convex auth-aware helpers
-10. Verify Convex reports the user as authenticated after login
-11. If the user wants production-ready setup, make sure the production Clerk config is also covered
+4. Activate the Clerk Convex integration at `https://dashboard.clerk.com/apps/setup/convex`
+5. Save the Clerk Frontend API URL shown there, for example `https://example.clerk.accounts.dev`
+6. Read the matching section of the official Convex and Clerk guide
+7. Install the correct Clerk package for the framework
+8. Configure `convex/auth.config.ts` with the Clerk issuer domain
+9. Set the Clerk environment variables for the frontend and backend
+10. Wrap the app with `ClerkProvider` and `ConvexProviderWithClerk`
+11. Gate Convex-backed UI with Convex auth-aware helpers
+12. Verify Convex reports the user as authenticated after login
+13. If the user wants production-ready setup, make sure the production Clerk config is also covered
 
 ## What To Do
 
 - Read the official Convex and Clerk guide before writing setup code
+- Send the user to `https://dashboard.clerk.com/apps/setup/convex` if the Convex integration is not already active
 - Match the guide to the app's framework, usually React, Next.js, or TanStack Start
 - Use the official examples for `ConvexProviderWithClerk`, `ClerkProvider`, and `useAuth`
 
@@ -40,23 +46,30 @@ Use this when the app already uses Clerk or the user wants Clerk's hosted auth f
 - `convex/auth.config.ts`
 - React or Vite client entry such as `src/main.tsx`
 - Next.js client wrapper for Convex if using App Router
+- Clerk Convex integration page: `https://dashboard.clerk.com/apps/setup/convex`
 - Clerk environment variables:
-  - `CLERK_JWT_ISSUER_DOMAIN` for Convex backend validation
+  - `CLERK_JWT_ISSUER_DOMAIN` for Convex backend validation in the Convex docs
+  - `CLERK_FRONTEND_API_URL` in the Clerk docs
   - `VITE_CLERK_PUBLISHABLE_KEY` for Vite apps
   - `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` for Next.js apps
   - `CLERK_SECRET_KEY` for Next.js server-side Clerk setup where required
 
+`CLERK_JWT_ISSUER_DOMAIN` and `CLERK_FRONTEND_API_URL` refer to the same Clerk Frontend API URL value. Do not treat them as two different URLs.
+
 ## Concrete Steps
 
-1. Install the Clerk package for the app's framework
-2. Create or update `convex/auth.config.ts` so Convex validates Clerk tokens
-3. Set the publishable key in the frontend environment
-4. Set the issuer domain so Convex can validate the JWT
-5. Replace plain `ConvexProvider` wiring with `ConvexProviderWithClerk`
-6. Wrap the app in `ClerkProvider`
-7. Use Convex auth helpers for authenticated rendering
-8. Run the normal Convex dev or deploy flow after updating backend auth config
-9. If the user wants production-ready setup, configure the production Clerk values and production issuer domain too
+1. Open `https://dashboard.clerk.com/apps/setup/convex`
+2. Activate the Convex integration in Clerk if it is not already active
+3. Copy the Clerk Frontend API URL shown there
+4. Install the Clerk package for the app's framework
+5. Create or update `convex/auth.config.ts` so Convex validates Clerk tokens
+6. Set the publishable key in the frontend environment
+7. Set the issuer domain or Frontend API URL so Convex can validate the JWT
+8. Replace plain `ConvexProvider` wiring with `ConvexProviderWithClerk`
+9. Wrap the app in `ClerkProvider`
+10. Use Convex auth helpers for authenticated rendering
+11. Run the normal Convex dev or deploy flow after updating backend auth config
+12. If the user wants production-ready setup, configure the production Clerk values and production issuer domain too
 
 ## Gotchas
 
@@ -66,6 +79,8 @@ Use this when the app already uses Clerk or the user wants Clerk's hosted auth f
 - Do not stop at "Clerk login works". The important check is that Convex also sees the session and can authenticate requests.
 - If the repo already uses Clerk, preserve its existing auth flow unless the user asked to change it.
 - Do not assume the same Clerk values work for both dev and production. Check the production issuer domain and publishable key separately.
+- If Convex says no auth provider matched the token, first confirm the Clerk Convex integration was activated at `https://dashboard.clerk.com/apps/setup/convex`
+- After activating the Clerk Convex integration, sign out completely and sign back in before retesting. An old Clerk session can keep using a token that Convex rejects.
 
 ## Production
 
@@ -77,6 +92,7 @@ Use this when the app already uses Clerk or the user wants Clerk's hosted auth f
 ## Validation
 
 - Verify the user can sign in with Clerk
+- If the Clerk integration was just activated, verify after a full Clerk sign-out and fresh sign-in
 - Verify `useConvexAuth()` reaches the authenticated state after Clerk login
 - Verify protected Convex queries run successfully inside authenticated UI
 - Verify `ctx.auth.getUserIdentity()` is non-null in protected backend functions
