@@ -12,7 +12,51 @@ Implement secure authentication in Convex with user management and access contro
 - Setting up authentication for the first time
 - Implementing user management (users table, identity mapping)
 - Creating authentication helper functions
-- Setting up OAuth providers (WorkOS, Auth0, etc.)
+- Setting up auth providers (Convex Auth, Clerk, WorkOS AuthKit, Auth0, custom JWT)
+
+## First Step: Choose the Auth Provider
+
+Convex supports multiple authentication approaches. Do not assume a provider.
+
+Before writing setup code:
+
+1. Ask the user which auth solution they want, unless the repository already makes it obvious
+2. If the repo already uses a provider, continue with that provider unless the user wants to switch
+3. If the user has not chosen a provider and the repo does not make it obvious, ask before proceeding
+
+Common options:
+
+- [Convex Auth](https://docs.convex.dev/auth/convex-auth) - good default when the user wants auth handled directly in Convex
+- [Clerk](https://docs.convex.dev/auth/clerk) - use when the app already uses Clerk or the user wants Clerk's hosted auth features
+- [WorkOS AuthKit](https://docs.convex.dev/auth/authkit/) - use when the app already uses WorkOS or the user wants AuthKit specifically
+- [Auth0](https://docs.convex.dev/auth/auth0) - use when the app already uses Auth0
+- Custom JWT provider - use when integrating an existing auth system not covered above
+
+Look for signals in the repo before asking:
+
+- Dependencies such as `@clerk/*`, `@workos-inc/*`, `@auth0/*`, or Convex Auth packages
+- Existing files such as `convex/auth.config.ts`, auth middleware, provider wrappers, or login components
+- Environment variables that clearly point at a provider
+
+## After Choosing a Provider
+
+Read the provider's official guide and use it for provider-specific setup details:
+
+- package installation
+- client provider wiring
+- environment variables
+- `convex/auth.config.ts` setup
+- login and logout UI patterns
+- framework-specific setup for React, Vite, or Next.js
+
+Do not invent provider-specific setup from memory when the docs are available.
+
+Keep the rest of this skill focused on Convex-side patterns that apply across providers:
+
+- mapping `ctx.auth.getUserIdentity()` to a `users` table
+- `getCurrentUser` and `getCurrentUserOrNull`
+- authorization helpers such as `requireAdmin`
+- ownership checks and team membership checks
 
 ## Architecture Overview
 

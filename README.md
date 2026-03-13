@@ -2,9 +2,26 @@
 
 Agent skills for common Convex workflows.
 
+## Skill Philosophy
+
+Skills in this repo should be laser-focused on a specific task or workflow.
+
+A good skill helps an agent take action, for example:
+
+- set up authentication
+- design a schema
+- create a function
+- plan a migration
+
+A skill should not exist just to provide generic background information. If content is mostly reference material, it should usually live in documentation, not as a standalone skill.
+
+Reference material is still useful inside a skill, but only when it helps the agent complete a concrete task.
+
 ## Skills
 
-### `convex-quickstart`
+The list below should match the current contents of `skills/`. Keep this section up to date whenever skills are added, removed, or renamed.
+
+### `convex-quickstart` (`skills/convex_quickstart`)
 
 Initialize a new Convex backend from scratch with schema, auth, and basic CRUD operations. Use when starting a new project or adding Convex to an existing app.
 
@@ -12,7 +29,7 @@ Initialize a new Convex backend from scratch with schema, auth, and basic CRUD o
 npx skills add convex/agent-skills --skill convex-quickstart
 ```
 
-### `schema-builder`
+### `schema-builder` (`skills/convex_schema_builder`)
 
 Design and generate Convex database schemas with proper validation, indexes, and relationships. Use when creating `schema.ts` or modifying table definitions.
 
@@ -20,7 +37,7 @@ Design and generate Convex database schemas with proper validation, indexes, and
 npx skills add convex/agent-skills --skill schema-builder
 ```
 
-### `function-creator`
+### `function-creator` (`skills/convex_function_creator`)
 
 Create Convex queries, mutations, and actions with proper validation, authentication, and error handling. Use when implementing new API endpoints.
 
@@ -28,7 +45,7 @@ Create Convex queries, mutations, and actions with proper validation, authentica
 npx skills add convex/agent-skills --skill function-creator
 ```
 
-### `auth-setup`
+### `auth-setup` (`skills/convex_auth_setup`)
 
 Set up Convex authentication with proper user management, identity mapping, and access control patterns. Use when implementing auth flows.
 
@@ -36,7 +53,7 @@ Set up Convex authentication with proper user management, identity mapping, and 
 npx skills add convex/agent-skills --skill auth-setup
 ```
 
-### `migration-helper`
+### `migration-helper` (`skills/convex_migration_helper`)
 
 Plan and execute Convex schema migrations safely, including adding fields, creating tables, and data transformations. Use when schema changes affect existing data.
 
@@ -44,7 +61,7 @@ Plan and execute Convex schema migrations safely, including adding fields, creat
 npx skills add convex/agent-skills --skill migration-helper
 ```
 
-### `components-guide`
+### `components-guide` (`skills/convex_components_guide`)
 
 Guide to using Convex components for feature encapsulation. Learn about sibling components, creating your own, and when to use components vs monolithic code.
 
@@ -52,7 +69,7 @@ Guide to using Convex components for feature encapsulation. Learn about sibling 
 npx skills add convex/agent-skills --skill components-guide
 ```
 
-### `convex-helpers-guide`
+### `convex-helpers-guide` (`skills/convex_helpers_guide`)
 
 Discover and use `convex-helpers` utilities for relationships, filtering, sessions, custom functions, and more. Use when you need pre-built Convex patterns.
 
@@ -98,3 +115,4 @@ Each skill follows the [Agent Skills open standard](https://github.com/anthropic
    ```
 3. Include comprehensive examples with bad/good patterns
 4. Add a checklist at the end of each skill
+5. Update this root `README.md` whenever skills are added, removed, renamed, or substantially repositioned

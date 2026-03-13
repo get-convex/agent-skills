@@ -2,6 +2,20 @@
 
 Rules for contributing to this repository.
 
+## Skill Philosophy
+
+Skills in this repository should be narrowly focused on a specific task or workflow.
+
+A good skill helps an agent take a concrete action, for example:
+- set up authentication
+- design a schema
+- create a Convex function
+- plan a migration
+
+Do not create skills that mainly provide generic background information or broad documentation. If content is mostly reference material, it should usually live in docs, not as a standalone skill.
+
+Reference material is fine inside a skill when it directly helps complete the task the skill is for.
+
 ## Style Guidelines
 
 - **No emojis** in any markdown files or code comments
@@ -19,19 +33,10 @@ Each skill should have:
 - Complete, runnable examples
 - Checklist at the end
 
-## Skills
+## Maintenance
 
-Skills from [get-convex/convex-agent-plugins](https://github.com/get-convex/convex-agent-plugins):
-
-| Skill | Purpose |
-|-------|---------|
-| `convex_quickstart` | New project setup with schema, auth, CRUD |
-| `convex_schema_builder` | Database schema design, validators, indexes |
-| `convex_function_creator` | Queries, mutations, actions with validation |
-| `convex_auth_setup` | Authentication, user management, access control |
-| `convex_migration_helper` | Schema migrations, backfills, data transforms |
-| `convex_components_guide` | Convex components for feature encapsulation |
-| `convex_helpers_guide` | convex-helpers utilities and patterns |
+- If skills are added, removed, renamed, or substantially repositioned, update the root `README.md`
+- Keep the skill list in the root `README.md` in sync with the current contents of `skills/`
 
 ## Code Examples
 
