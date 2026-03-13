@@ -103,6 +103,24 @@ Invoke skills via slash commands:
 
 ## Contributing
 
+Before contributing, review the core Agent Skills docs:
+
+- [Overview](https://agentskills.io/home)
+- [What are skills?](https://agentskills.io/what-are-skills)
+- [Specification](https://agentskills.io/specification)
+- [Optimizing skill descriptions](https://agentskills.io/skill-creation/optimizing-descriptions)
+- [Evaluating skill output quality](https://agentskills.io/skill-creation/evaluating-skills)
+
+If your skill bundles scripts, also read [Using scripts in skills](https://agentskills.io/skill-creation/using-scripts).
+
+Validate skills by trying to use them in a realistic temp project, not just by reading them.
+
+- Push the skill as far as possible with an agent in a throwaway directory
+- If a human must intervene, ask explicitly for the exact action needed and then continue
+- Record what worked, where the agent got stuck, and what confused the flow
+- Feed those learnings back into the skill so the next run is better
+- For UI-facing skills such as auth setup, validate the actual browser flow during skill development, not just code generation or a successful build
+
 Each skill follows the [Agent Skills open standard](https://github.com/anthropics/skills):
 
 1. Create a directory under `skills/` with the skill name
