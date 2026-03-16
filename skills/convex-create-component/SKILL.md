@@ -1,5 +1,5 @@
 ---
-name: create-component
+name: convex-create-component
 description: Design and build Convex components with clear boundaries, isolated state, and app-facing wrappers. Use when creating a new Convex component, extracting reusable backend logic into one, or packaging Convex functionality for reuse across apps.
 ---
 
