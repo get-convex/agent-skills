@@ -38,7 +38,7 @@ Use this when the user wants auth handled directly in Convex rather than through
 
 - choosing Convex Auth as the default provider for a new Convex app
 - understanding whether the app wants magic links, OTPs, OAuth, or passwords
-- keeping the setup provider-specific while reusing shared Convex identity and authz patterns from `references/common-patterns.md`
+- keeping the setup provider-specific while using the official Convex Auth docs for identity and authorization behavior
 
 ## What To Do
 
@@ -92,7 +92,7 @@ Use this when the user wants auth handled directly in Convex rather than through
 - Convex Auth does not mean every app needs a `users` table. If the app only needs authentication gates, `ctx.auth.getUserIdentity()` may be enough.
 - If the app is greenfield, starting from the official starter flow is usually better than partially recreating it by hand.
 - Do not stop at local dev setup if the user expects production-ready auth. The production deployment needs the auth setup too.
-- Keep provider-specific setup in the official docs and keep app-specific authorization logic in `references/common-patterns.md`.
+- Keep provider-specific setup and Convex Auth authorization behavior in the official docs instead of inventing shared patterns from memory.
 
 ## Production
 
