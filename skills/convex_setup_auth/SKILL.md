@@ -1,5 +1,5 @@
 ---
-name: auth-setup
+name: setup-auth
 description: Set up Convex authentication with proper user management, identity mapping, and access control patterns. Use when implementing auth flows.
 ---
 

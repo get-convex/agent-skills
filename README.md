@@ -45,12 +45,12 @@ Create Convex queries, mutations, and actions with proper validation, authentica
 npx skills add convex/agent-skills --skill function-creator
 ```
 
-### `auth-setup` (`skills/convex_auth_setup`)
+### `setup-auth` (`skills/convex_setup_auth`)
 
 Set up Convex authentication with proper user management, identity mapping, and access control patterns. Use when implementing auth flows.
 
 ```bash
-npx skills add convex/agent-skills --skill auth-setup
+npx skills add convex/agent-skills --skill setup-auth
 ```
 
 ### `migration-helper` (`skills/convex_migration_helper`)
