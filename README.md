@@ -61,12 +61,12 @@ Plan and execute Convex schema migrations safely, including adding fields, creat
 npx skills add convex/agent-skills --skill migration-helper
 ```
 
-### `components-guide` (`skills/convex_components_guide`)
+### `create-component` (`skills/convex_create_component`)
 
-Guide to using Convex components for feature encapsulation. Learn about sibling components, creating your own, and when to use components vs monolithic code.
+Design and build reusable Convex components with clear boundaries, isolated state, and app-facing wrappers. Use when creating a new Convex component or extracting reusable backend logic into one.
 
 ```bash
-npx skills add convex/agent-skills --skill components-guide
+npx skills add convex/agent-skills --skill create-component
 ```
 
 ### `convex-helpers-guide` (`skills/convex_helpers_guide`)
@@ -97,7 +97,7 @@ Invoke skills via slash commands:
 /function-creator
 /auth-setup
 /migration-helper
-/components-guide
+/create-component
 /convex-helpers-guide
 ```
 
