@@ -21,6 +21,7 @@ Invoke skills via slash commands:
 /convex-setup-auth
 /convex-migration-helper
 /convex-create-component
+/convex-performance-audit
 ```
 
 ## Skill Philosophy
