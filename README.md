@@ -14,14 +14,27 @@ npx skills add get-convex/agent-skills --all
 
 ## Usage
 
-Invoke skills via slash commands:
+Skills are applied automatically when the agent determines they're relevant. How
+you manually invoke them depends on your tool:
+
+| Tool                     | Manual invocation |
+| ------------------------ | ----------------- |
+| Cursor                   | `/skill-name`     |
+| VS Code (GitHub Copilot) | `/skill-name`     |
+| Claude Code              | `/skill-name`     |
+| Windsurf                 | `@skill-name`     |
+| Codex (OpenAI)           | `$skill-name`     |
+
+For example, to kick off auth setup in Cursor or Claude Code:
 
 ```
-/convex-quickstart
 /convex-setup-auth
-/convex-migration-helper
-/convex-create-component
-/convex-performance-audit
+```
+
+In Windsurf:
+
+```
+@convex-setup-auth
 ```
 
 ## Skill Philosophy
@@ -31,9 +44,9 @@ Skills in this repo should be laser-focused on a specific task or workflow.
 A good skill helps an agent take action, for example:
 
 - set up authentication
-- design a schema
-- create a function
-- plan a migration
+- create a component
+- perform a migration
+- diagnose performance issues
 
 A skill should not exist just to provide generic background information. If content is mostly reference material, it should usually live in documentation, not as a standalone skill.
 
