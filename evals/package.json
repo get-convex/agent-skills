@@ -4,7 +4,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "eval": "tsx run.ts",
+    "eval": "tsx eval.ts",
+    "run": "tsx run.ts",
     "score": "tsx score.ts",
     "report": "tsx report.ts"
   },
