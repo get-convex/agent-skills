@@ -74,23 +74,44 @@ npx tsx report.ts --run-id <run-id>
 
 ### Available tasks
 
+**Construction tasks** (recommended -- test whether skills prevent anti-patterns during building):
+
 | Task | Skill | What it tests |
 |------|-------|---------------|
+| `build-from-spec` | convex-performance-audit | Build a chat app, score perf anti-patterns introduced |
+| `build-auth-from-spec` | convex-setup-auth | Build a doc editor with auth, score auth patterns |
+| `build-migration-from-spec` | convex-migration-helper | Evolve a schema, score migration safety |
+
+**Repair tasks** (test bug-fixing ability -- less useful for measuring skill impact):
+
+| Task | Skill | What it tests |
+|------|-------|---------------|
+| `subtle-perf-bugs` | convex-performance-audit | Find 7 subtle Convex-specific perf bugs |
+| `subscription-overload` | convex-performance-audit | Fix subscription invalidation and N+1 patterns |
+| `extract-component` | convex-create-component | Extract reusable component from app code |
+| `component-with-callbacks` | convex-create-component | Build component with callbacks and auth boundary |
 | `scaffold-react-app` | convex-quickstart | Build a Convex + React app from scratch |
+| `optimize-query` | convex-performance-audit | Fix basic perf issues in existing code |
 | `add-clerk-auth` | convex-setup-auth | Add auth to an existing app |
 | `add-field-migration` | convex-migration-helper | Safely migrate schema + backfill data |
-| `optimize-query` | convex-performance-audit | Fix perf issues in existing code |
-| `extract-component` | convex-create-component | Extract reusable component from app code |
 
-### Multi-model comparison
+### One-command eval
 
 ```bash
-npx tsx run.ts --task scaffold-react-app --models sonnet,opus,codex --runs 3
-npx tsx score.ts --run-id <run-id> --judges opus,codex
-npx tsx report.ts --run-id <run-id>
+# Run + score + report in one command
+npx tsx eval.ts --task build-from-spec --models sonnet --judges opus
+
+# Multi-model comparison
+npx tsx eval.ts --task build-from-spec --models sonnet,opus --judges opus
 ```
 
-The report shows per-criterion scores, overall totals, and deltas (skill improvement over baseline). The failure analysis section gives actionable feedback for iterating on skills without overfitting to specific eval tasks.
+### Key finding
+
+Construction tasks show dramatically larger skill impact than repair tasks. Models already know how to fix bugs when told about them, but they introduce Convex-specific anti-patterns when building from scratch. The skill prevents those mistakes.
+
+Example deltas on `build-from-spec` (performance audit):
+- Opus: baseline 3.29 -> with skill 5.00 (+1.71)
+- Sonnet: baseline 3.14 -> with skill 4.50 (+1.36)
 
 ## Contributing
 
