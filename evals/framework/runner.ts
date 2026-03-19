@@ -44,12 +44,12 @@ export async function findTaskFile(taskName: string): Promise<string> {
   throw new Error(`Task not found: ${taskName}. Check evals/tasks/ directory.`);
 }
 
-async function setupWorkDir(taskPath: string, condition: Condition, skillName: string): Promise<string> {
+async function setupWorkDir(taskPath: string, condition: Condition, skillName: string, fixtureDirName?: string): Promise<string> {
   const workDir = join(tmpdir(), `eval-${randomUUID()}`);
   await mkdir(workDir, { recursive: true });
 
   // Copy fixture files if they exist
-  const fixtureDir = join(dirname(taskPath), "fixture");
+  const fixtureDir = join(dirname(taskPath), fixtureDirName ?? "fixture");
   try {
     await cp(fixtureDir, workDir, { recursive: true });
   } catch {
@@ -94,7 +94,7 @@ export async function runEval(options: RunOptions): Promise<EvalRun> {
       for (const condition of conditions) {
         console.log(`  ${model} / ${condition}...`);
 
-        const workDir = await setupWorkDir(taskPath, condition, task.skill);
+        const workDir = await setupWorkDir(taskPath, condition, task.skill, task.fixture_dir);
         const runner = getRunner(model);
 
         try {

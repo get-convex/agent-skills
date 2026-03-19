@@ -12,6 +12,7 @@ export interface EvalTask {
   timeout_seconds: number;
   max_turns: number;
   skill_focus: string; // what the skill is supposed to help with -- guides the judge
+  fixture_dir?: string; // custom fixture directory name (defaults to "fixture")
   scoring: {
     criteria: ScoringCriterion[];
   };

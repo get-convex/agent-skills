@@ -223,7 +223,7 @@ export async function scoreRun(options: ScoreOptions): Promise<ScoredRun> {
   const criteria = task.scoring.criteria;
 
   // Load fixture files so the judge can distinguish pre-existing code from agent output
-  const fixtureDir = join(dirname(taskPath), "fixture");
+  const fixtureDir = join(dirname(taskPath), task.fixture_dir ?? "fixture");
   let fixtureFiles: Record<string, string> = {};
   try {
     fixtureFiles = await collectFiles(fixtureDir);

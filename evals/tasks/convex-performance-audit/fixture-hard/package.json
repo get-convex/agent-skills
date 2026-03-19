@@ -1,0 +1,9 @@
+{
+  "name": "collab-workspace",
+  "version": "0.0.0",
+  "private": true,
+  "dependencies": {
+    "convex": "^1.17.0",
+    "react": "^18.3.0"
+  }
+}

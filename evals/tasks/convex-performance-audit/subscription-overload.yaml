@@ -1,0 +1,80 @@
+name: subscription-overload
+skill: convex-performance-audit
+description: >
+  Test whether the agent can diagnose and fix subscription cost, invalidation
+  fan-out, and function budget problems in a realistic collaborative app.
+  This is significantly harder than basic index optimization.
+skill_focus: |
+  Advanced Convex performance: subscription invalidation cost (not just OCC),
+  isolating frequently-updated fields into separate documents to reduce query
+  re-runs, using Date.now() correctly (or not) in queries, sharded counters
+  for hot documents, digest tables for narrowing read sets, bounded reads to
+  stay within function budgets, and batching N+1 query patterns into single
+  queries. The skill covers subscription-cost.md, function-budget.md, and
+  occ-conflicts.md patterns.
+fixture_dir: fixture-hard
+prompt: |
+  This Convex app is a collaborative workspace with channels, messages, and
+  user presence. It has serious performance problems at scale. Diagnose and
+  fix all of them.
+
+  Known issues:
+  1. The presence system writes lastSeen to the user document every 5 seconds.
+     Every query that reads any user field re-runs on every heartbeat, even
+     queries that only need name and email. Fix the invalidation fan-out.
+  2. The channel list query uses Date.now() to show "active in last hour"
+     channels, which defeats Convex's query cache. Fix it.
+  3. The message list page renders 20 messages, each with a useQuery to
+     fetch the author's profile -- that's 20 subscriptions per page load.
+     Batch this into a single query.
+  4. The unread count query does a full table scan of messages and filters
+     in JS. It will break at scale. Fix it with a counter approach.
+  5. The search mutation writes results to a search_results table AND
+     updates a global analytics counter in the same transaction. Split
+     the write set.
+
+  For each fix, explain the Convex-specific reason it matters (not just
+  "it's slow"). Reference subscription invalidation, read sets, OCC, or
+  function budgets as appropriate.
+timeout_seconds: 300
+max_turns: 30
+scoring:
+  criteria:
+    - name: presence_isolation
+      weight: 3
+      description: >
+        Agent moves lastSeen/heartbeat to a separate document so queries
+        reading user name/email are not invalidated by presence heartbeats.
+        This is a subscription-cost pattern, not just OCC. Must create a
+        separate table (e.g. heartbeats or presence) and update references.
+    - name: date_now_removal
+      weight: 2
+      description: >
+        Agent removes Date.now() from the query and replaces it with either
+        a boolean flag updated by a cron/scheduled function, or a client-passed
+        timestamp rounded to a coarse interval. Must explain why Date.now()
+        defeats Convex's query cache.
+    - name: n_plus_one_batching
+      weight: 2
+      description: >
+        Agent replaces per-message useQuery calls with a single query that
+        returns messages with author info included (server-side join or
+        denormalized data). Reduces subscription count from N+1 to 1.
+    - name: counter_approach
+      weight: 2
+      description: >
+        Agent replaces the full-scan unread count with a maintained counter
+        (sharded counter, aggregate component, or pre-computed summary row).
+        Must not just add an index -- the problem is reading all messages
+        to count them.
+    - name: write_splitting
+      weight: 1
+      description: >
+        Agent moves the analytics counter update out of the search mutation
+        into a scheduled function to reduce the transaction's write set.
+    - name: explanations
+      weight: 1
+      description: >
+        Agent explains each fix in terms of Convex-specific concepts:
+        subscription invalidation, read sets, query cache, OCC contention,
+        or function budgets. Not just "this is faster."
