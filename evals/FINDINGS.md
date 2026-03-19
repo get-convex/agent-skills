@@ -96,20 +96,24 @@ Not tested with construction tasks. Repair tasks showed no delta -- both models 
 | Migration | **+0.50** | 0.00 | -0.09 to +0.44 |
 | Quickstart | (not tested) | (not tested) | -0.11 to 0.00 |
 
-## Symptom-Based & Implicit Architecture Tasks (Sonnet)
+## Symptom-Based & Implicit Architecture Tasks
 
-| Task | Type | Baseline | +Skill | Delta |
-|------|------|----------|--------|-------|
-| app-is-laggy | cascading diagnosis | 3.77 | 4.54 | **+0.77** |
-| add-unread-badges | implicit architecture | 3.83 | 4.00 | +0.17 |
-| bandwidth-spike | single symptom | 4.64 | 4.64 | 0.00 |
-| cant-login | single symptom | 4.73 | 4.73 | 0.00 |
+| Model | Task | Type | Baseline | +Skill | Delta |
+|-------|------|------|----------|--------|-------|
+| Sonnet | app-is-laggy | cascading diagnosis | 3.77 | 4.54 | **+0.77** |
+| Opus | add-unread-badges | implicit architecture | 3.58 | 4.00 | **+0.42** |
+| Sonnet | add-unread-badges | implicit architecture | 3.83 | 4.00 | +0.17 |
+| Opus | app-is-laggy | cascading diagnosis | 4.54 | 4.69 | +0.15 |
+| Sonnet | bandwidth-spike | single symptom | 4.64 | 4.64 | 0.00 |
+| Sonnet | cant-login | single symptom | 4.73 | 4.73 | 0.00 |
 
-**Cascading diagnosis is the sweet spot for perf audit.** When there are multiple interacting problems (heartbeat invalidation + Date.now() + noop writes + hot counter), the skill's systematic approach helps the agent find ALL of them. Without the skill, Sonnet missed the heartbeat isolation pattern and didn't fix all issues.
+**Cascading diagnosis is the sweet spot for perf audit.** When there are multiple interacting problems (heartbeat invalidation + Date.now() + noop writes + hot counter), the skill's systematic approach helps the agent find ALL of them. Sonnet baseline missed heartbeat isolation entirely (3/5 vs 5/5 with skill).
 
-**Simple single-cause symptoms don't need skills.** Both bandwidth-spike (full doc returns, search scan, N+1) and cant-login (wrong field, missing index, no upsert) -- Sonnet diagnoses and fixes these without help.
+**Implicit architecture shows real lift for both models.** The add-unread-badges task asks for a feature, not an optimization -- but both models build a more scalable solution with the skill. Opus showed +0.42.
 
-**Implicit architecture shows small lift.** Both versions correctly used separate read tracking (not readBy arrays) for unread badges, but neither used maintained counters. The skill needs stronger guidance on counter patterns.
+**Simple single-cause symptoms don't need skills.** Both bandwidth-spike and cant-login -- models diagnose and fix these without help.
+
+**Biggest remaining gap: maintained counters.** Across ALL runs (both models, with and without skill), neither model uses maintained counters for unread counts. Both use `.collect().length` -- scan and count. The perf audit skill's function-budget.md teaches `.take(N)` and pagination but doesn't teach the counter pattern for "I need a total count." This is the single highest-impact improvement to make to the skill.
 
 ## Recommendations
 
