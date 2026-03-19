@@ -1,0 +1,72 @@
+name: build-component-from-spec
+skill: convex-create-component
+description: >
+  Test whether the skill prevents the agent from introducing component
+  anti-patterns when building from scratch. Construction task.
+skill_focus: |
+  Convex component architecture: correct directory structure
+  (convex/components/<name>/ not top-level), defineComponent in component
+  convex.config.ts, defineApp with app.use() in app convex.config.ts,
+  isolated schema (component tables not in app schema), component cannot
+  access ctx.auth or app tables directly, app wrappers that handle auth
+  before delegating to component, and using component references (not
+  api object) to call component functions from the app.
+fixture_dir: fixture-buildcomp
+prompt: |
+  Build a Convex component called "activity-log" that tracks user actions
+  across the app. Requirements:
+
+  1. The component should live in convex/components/activity-log/
+  2. Component schema: an "entries" table with userId (string, NOT Id),
+     action (string), metadata (optional object), and createdAt (number)
+  3. Component public API:
+     - log(userId, action, metadata?) -- record an activity
+     - getRecent(userId, limit?) -- get recent activity for a user
+     - purgeOld(olderThan) -- delete entries older than a timestamp
+  4. The component must NOT import from the app or access app tables
+  5. The component must NOT use ctx.auth (userId is passed as a string)
+  6. The app must:
+     - Install the component in convex.config.ts using defineApp
+     - Create wrapper functions that resolve the current user via
+       ctx.auth.getUserIdentity() and then call the component
+     - The wrapper should call the component via the component reference
+       from installation, NOT via the api object
+
+  This is a LOCAL component (not a published npm package).
+timeout_seconds: 300
+max_turns: 30
+scoring:
+  criteria:
+    - name: directory_structure
+      weight: 3
+      description: >
+        Component files are in convex/components/activity-log/ (NOT at the
+        top level of convex/). The component has its own convex.config.ts
+        using defineComponent. If files are in the wrong location, score 1.
+    - name: schema_isolation
+      weight: 3
+      description: >
+        Component schema is defined INSIDE the component directory, NOT in
+        the app's main schema.ts. The entries table belongs to the component.
+        The app schema does NOT include activity log tables. If the component
+        tables are in the app schema, score 1.
+    - name: no_app_imports
+      weight: 2
+      description: >
+        Component code has zero imports from app code. No importing from
+        "../" or "../../" to reach app modules. No importing from
+        "./_generated/api" (that's the app's generated code). Component
+        uses its own _generated modules.
+    - name: app_installation
+      weight: 2
+      description: >
+        App's convex.config.ts uses defineApp and app.use() to install
+        the component. The component is referenced by the installed name,
+        not by direct import of component internals.
+    - name: wrapper_uses_component_ref
+      weight: 2
+      description: >
+        App wrapper functions call the component via the component reference
+        obtained from installation (e.g. components.activityLog), NOT via
+        the api object (api.components.activityLog is wrong). This is a
+        Convex-specific pattern that differs from normal function calls.
