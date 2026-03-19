@@ -1,0 +1,62 @@
+name: node-action-confusion
+skill: convex-performance-audit
+description: >
+  Test whether the agent correctly separates Node.js actions from mutations.
+  Real-world mistake: agents put mutations in "use node" files, which fails
+  because Convex only allows actions in Node.js runtime files.
+skill_focus: |
+  Convex function architecture: queries and mutations run in the Convex
+  runtime (deterministic, no network). Actions run in Node.js (can do
+  network, filesystem). "use node" at the top of a file means ALL exports
+  must be actions. Agents commonly put mutations in the same file as actions,
+  or call ctx.runAction when they should extract a plain helper function.
+fixture_dir: fixture-node-actions
+prompt: |
+  Build a Convex backend for a document processing app:
+
+  1. A mutation to save a document to the database (title, content, status)
+  2. An action that calls an external API to summarize the document content
+     (use fetch to POST to https://api.example.com/summarize -- just mock
+     the implementation, the URL doesn't need to work)
+  3. After summarizing, save the summary back to the document via a mutation
+  4. A mutation to update document status
+  5. A query to list documents with their summaries
+
+  The action needs "use node" because it calls fetch to an external API.
+  Make sure the mutations are NOT in the same file as the action.
+timeout_seconds: 480
+max_turns: 50
+scoring:
+  criteria:
+    - name: mutations_not_in_node_file
+      weight: 3
+      description: >
+        Mutations and queries are NOT in a file with "use node" at the top.
+        They must be in a separate file. If any mutation or query is exported
+        from a "use node" file, score 1.
+    - name: action_in_node_file
+      weight: 2
+      description: >
+        The external API call (fetch) is in an action, and that file has
+        "use node" at the top. Actions that need Node APIs must declare
+        the Node runtime.
+    - name: action_calls_mutation
+      weight: 2
+      description: >
+        The action saves results back to the database by calling a mutation
+        (via ctx.runMutation or ctx.scheduler.runAfter with an internal
+        mutation), NOT by trying to use ctx.db directly (which doesn't
+        exist on action context).
+    - name: no_unnecessary_runaction
+      weight: 2
+      description: >
+        Does NOT use ctx.runAction to call another action when a plain
+        TypeScript function would work. ctx.runAction creates a separate
+        invocation with its own overhead. Extract shared logic into
+        helper functions instead.
+    - name: correct_internal_pattern
+      weight: 1
+      description: >
+        Uses internalMutation/internalAction for functions called only
+        by other functions, not exposed to the client. The save-summary
+        mutation should be internal since only the action calls it.

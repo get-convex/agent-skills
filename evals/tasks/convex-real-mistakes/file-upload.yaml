@@ -1,0 +1,60 @@
+name: file-upload
+skill: convex-performance-audit
+description: >
+  Test whether the agent correctly handles Convex file storage, including
+  content type on blobs and the generate-upload-url pattern. Real-world
+  mistake: agents create Blobs without content type, causing storage to fail.
+skill_focus: |
+  Convex file storage patterns: generating upload URLs via mutations,
+  uploading from the client with proper content type, and storing
+  files with ctx.storage. Agents commonly create Blobs without explicit
+  content type which causes ctx.storage.store to fail.
+fixture_dir: fixture-file-upload
+prompt: |
+  Build a Convex backend for an image gallery app:
+
+  1. Schema: images table with title, storageId (v.id("_storage")), and
+     optional thumbnailId
+  2. A mutation that generates an upload URL (ctx.storage.generateUploadUrl)
+  3. A mutation to save image metadata after upload (takes the storageId
+     returned from the upload)
+  4. A query to list images with their URLs (use ctx.storage.getUrl)
+  5. An action that takes a storageId, downloads the image, creates a
+     thumbnail version (just resize concept -- mock the actual resize),
+     and stores the thumbnail back. The thumbnail must be stored with
+     the correct content type.
+
+  Make sure all storage operations include proper content types.
+timeout_seconds: 480
+max_turns: 50
+scoring:
+  criteria:
+    - name: generate_upload_url_pattern
+      weight: 2
+      description: >
+        Agent uses ctx.storage.generateUploadUrl() in a mutation to
+        create upload URLs, following the Convex file upload pattern.
+        Does NOT try to accept file data directly in a mutation.
+    - name: blob_has_content_type
+      weight: 3
+      description: >
+        When creating a Blob for ctx.storage.store(), the agent includes
+        { type: "image/..." } in the Blob constructor options. Without
+        explicit content type, ctx.storage.store fails. Score 1 if
+        Blob is created without type parameter.
+    - name: storage_id_type
+      weight: 2
+      description: >
+        Uses v.id("_storage") for storageId fields in the schema, not
+        v.string(). Convex storage IDs are typed references.
+    - name: get_url_pattern
+      weight: 1
+      description: >
+        Uses ctx.storage.getUrl(storageId) to generate serving URLs
+        for images, not trying to construct URLs manually.
+    - name: action_for_processing
+      weight: 2
+      description: >
+        Image processing (download + resize + re-upload) is in an action,
+        not a mutation. Actions have the Node runtime needed for binary
+        processing and longer execution time.

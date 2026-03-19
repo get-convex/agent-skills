@@ -1,0 +1,6 @@
+{
+  "name": "doc-processor",
+  "version": "0.0.0",
+  "private": true,
+  "dependencies": { "convex": "^1.17.0" }
+}

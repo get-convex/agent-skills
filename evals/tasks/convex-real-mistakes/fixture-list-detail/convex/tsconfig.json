@@ -1,0 +1,5 @@
+{
+  "compilerOptions": { "allowJs": true, "strict": true },
+  "include": ["./**/*"],
+  "exclude": ["./node_modules"]
+}

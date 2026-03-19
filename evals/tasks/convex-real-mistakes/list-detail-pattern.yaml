@@ -1,0 +1,63 @@
+name: list-detail-pattern
+skill: convex-performance-audit
+description: >
+  Test whether the agent avoids returning full documents in list queries
+  and reuses validators between related schemas. Real-world mistakes:
+  list queries return huge content fields, and validators are duplicated
+  between digest and full document tables.
+skill_focus: |
+  Convex data patterns: list queries should project to only needed fields
+  (not return full documents with large content), validators should be
+  defined once and reused across related table definitions, and multiple
+  paginated queries in one function are not allowed.
+fixture_dir: fixture-list-detail
+prompt: |
+  Build a Convex backend for a CMS with articles:
+
+  1. Schema for articles with: title, slug, author, summary (short),
+     content (very large -- full markdown), tags, publishedAt, updatedAt
+  2. A list query for the article index page -- this page shows title,
+     author, summary, tags, and date. It should NOT return the full
+     content field (articles can be 50KB+ of markdown).
+  3. A detail query that returns the full article including content
+  4. A search query that finds articles by tag
+  5. The article list should support pagination using Convex's
+     usePaginatedQuery pattern
+  6. Share validators between the list and detail return types where
+     the fields overlap (DRY principle)
+
+  Think about what happens when the article table has 10,000 articles
+  with 50KB content each.
+timeout_seconds: 480
+max_turns: 50
+scoring:
+  criteria:
+    - name: list_projects_fields
+      weight: 3
+      description: >
+        The list/index query does NOT return the full content field.
+        It maps documents to only the fields the list page needs
+        (title, author, summary, tags, date). If it returns full
+        documents including content, score 1.
+    - name: validator_reuse
+      weight: 2
+      description: >
+        Shared fields between list and detail responses reuse the
+        same validator definitions (defined once, referenced in both
+        places). Not duplicated string-for-string.
+    - name: single_paginated_query
+      weight: 2
+      description: >
+        Does NOT run multiple paginated queries in one function
+        (Convex throws "multiple paginated queries" error). Pagination
+        is done on one table per function.
+    - name: pagination_pattern
+      weight: 2
+      description: >
+        Uses Convex's pagination API correctly (.paginate() with
+        paginationOpts) so the frontend can use usePaginatedQuery.
+    - name: index_for_tags
+      weight: 1
+      description: >
+        Has an appropriate index or search index for the tag query.
+        Does not scan all articles and filter in JS.

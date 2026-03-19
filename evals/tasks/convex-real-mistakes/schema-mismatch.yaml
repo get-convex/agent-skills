@@ -1,0 +1,59 @@
+name: schema-mismatch
+skill: convex-migration-helper
+description: >
+  Test what the agent does when asked to add a required field to a table
+  with existing data. Real-world mistake: agents either remove schema
+  validation entirely, use schemaValidation: false, or add the field as
+  required (which breaks deployment).
+skill_focus: |
+  Convex schema migration: when adding a new field that should eventually
+  be required, the agent must add it as v.optional() first, deploy, run
+  a backfill migration, then (optionally) tighten to required in a later
+  deploy. Agents commonly skip the optional step or disable schema
+  validation entirely.
+fixture_dir: fixture-schema-mismatch
+prompt: |
+  This app tracks blog posts. The product team wants to add a "category"
+  field to every post. Categories should be required -- every post must
+  have one. The database already has 500 posts without categories.
+
+  Add the category field and make sure the app works. Existing posts
+  should get category "general" as a default.
+
+  Important: the app is live in production. Your changes must not break
+  the existing deployment.
+timeout_seconds: 480
+max_turns: 50
+scoring:
+  criteria:
+    - name: keeps_schema_validation
+      weight: 3
+      description: >
+        Agent does NOT disable schema validation (no schemaValidation: false,
+        no removing the schema, no commenting out defineSchema). Schema
+        validation must stay enabled. Score 1 if validation is disabled.
+    - name: adds_as_optional_first
+      weight: 3
+      description: >
+        Agent adds category as v.optional(v.string()) initially, not
+        v.string(). Adding as required would fail deployment because
+        existing documents don't have the field. Score 1 if added as
+        required without migration.
+    - name: writes_backfill_migration
+      weight: 2
+      description: >
+        Agent writes a migration function to backfill existing posts
+        with category "general". Uses batched/paginated approach, not
+        unbounded .collect() + loop.
+    - name: handles_both_states
+      weight: 2
+      description: >
+        Queries handle posts both with and without the category field
+        during the migration window. Uses fallback like
+        post.category ?? "general".
+    - name: no_typescript_disable
+      weight: 1
+      description: >
+        Agent does NOT add @ts-ignore, @ts-expect-error, as any, or
+        disable TypeScript checking to work around type errors from
+        the schema change.
