@@ -1,0 +1,79 @@
+name: component-with-callbacks
+skill: convex-create-component
+description: >
+  Test whether the agent can build a component with advanced patterns:
+  callbacks from component to app, proper auth delegation, and scheduled
+  jobs that need app context.
+skill_focus: |
+  Advanced Convex component patterns: component-to-app callbacks (the component
+  needs to invoke app-provided functions), proper directory structure
+  (convex/components/<name>/), auth boundary (components cannot access
+  ctx.auth directly -- the app must pass user info), scheduled jobs inside
+  components that reference component-internal functions, and clean public
+  API with typed args validators. The skill teaches these boundaries and
+  patterns specific to Convex's component model.
+fixture_dir: fixture-callback
+prompt: |
+  Build a "notifications" Convex component for this app. The component needs
+  these advanced features:
+
+  1. Component structure: convex/components/notifications/ with its own
+     convex.config.ts, schema, and functions
+  2. Internal tables: notifications (userId, message, channel, read, createdAt)
+     and notification_preferences (userId, channel, enabled)
+  3. Public API:
+     - send(userId, message, channel) -- creates a notification and triggers
+       a callback to the app (e.g., to send an email or push notification)
+     - markRead(notificationId) -- marks a notification as read
+     - listUnread(userId) -- returns unread notifications
+     - setPreference(userId, channel, enabled) -- manages per-channel prefs
+  4. Callback pattern: when a notification is sent, the component needs to
+     call an app-provided function to handle delivery. The app registers
+     this callback when installing the component. The component should NOT
+     import or reference app code directly.
+  5. Scheduled cleanup: a function that can be scheduled to delete old
+     read notifications (older than 30 days). This must reference the
+     component's internal functions, not app functions.
+  6. The app must install the component, provide the delivery callback,
+     and expose wrapper functions that clients can call.
+
+  The component must have zero dependencies on app tables or app auth.
+  The app passes userId as a string argument -- the component does not
+  call ctx.auth.
+timeout_seconds: 300
+max_turns: 30
+scoring:
+  criteria:
+    - name: component_isolation
+      weight: 3
+      description: >
+        Component has zero imports from app code. Does not access app tables.
+        Does not call ctx.auth. userId is received as a string parameter.
+        Has its own schema with its own tables. Proper convex.config.ts
+        with defineComponent.
+    - name: callback_pattern
+      weight: 3
+      description: >
+        Component accepts a callback function reference from the app at
+        install/configuration time. When sending a notification, the
+        component invokes this callback to trigger app-side delivery logic.
+        The app provides the callback without the component knowing the
+        app's internal structure.
+    - name: scheduled_cleanup
+      weight: 2
+      description: >
+        Cleanup function uses the component's internal function references
+        (not app functions). Can be scheduled via ctx.scheduler within the
+        component. Correctly deletes old read notifications.
+    - name: app_integration
+      weight: 2
+      description: >
+        App correctly installs the component with app.use(), provides
+        the delivery callback, and creates wrapper mutations/queries
+        that clients can call. Wrappers handle auth (resolving current
+        user) before delegating to the component.
+    - name: directory_structure
+      weight: 1
+      description: >
+        Files are in convex/components/notifications/ (not at top level).
+        Component has its own convex.config.ts separate from the app's.

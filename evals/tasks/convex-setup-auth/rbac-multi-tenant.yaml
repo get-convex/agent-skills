@@ -1,0 +1,63 @@
+name: rbac-multi-tenant
+skill: convex-setup-auth
+description: >
+  Test whether the agent can implement multi-tenant role-based access control
+  with row-level security across related tables. Much harder than basic auth.
+skill_focus: |
+  Convex authentication patterns beyond basic login: multi-tenant data isolation,
+  role-based access control (admin/member/viewer), row-level security across
+  related tables (org -> projects -> tasks), reusable auth helpers using
+  ctx.auth.getUserIdentity() with proper typing, and ensuring all data access
+  paths enforce authorization consistently.
+fixture_dir: fixture-rbac
+prompt: |
+  This Convex app manages projects and tasks for multiple organizations.
+  Add a complete role-based access control system:
+
+  1. Users belong to organizations via a memberships table with roles:
+     "admin", "member", or "viewer"
+  2. Projects belong to an organization. Only members of that org can see them.
+  3. Tasks belong to a project. Access is inherited from the project's org.
+  4. Admins can create/edit/delete projects and tasks in their org.
+     Members can create tasks and edit their own tasks.
+     Viewers can only read.
+  5. Create a reusable authorization helper that checks the current user's
+     role in a given org. Use it in ALL data-access functions.
+  6. A user can belong to multiple orgs with different roles in each.
+  7. Ensure there are no authorization bypass paths -- every query and
+     mutation that touches org data must verify membership.
+
+  Use Clerk as the auth provider (backend side only -- ctx.auth patterns).
+  Do NOT use any types or casting. All helpers must be properly typed.
+timeout_seconds: 300
+max_turns: 30
+scoring:
+  criteria:
+    - name: membership_model
+      weight: 2
+      description: >
+        Memberships table correctly models user-org-role relationships.
+        A user can have different roles in different orgs. Schema uses
+        proper validators and has indexes for both user and org lookups.
+    - name: authorization_helper
+      weight: 3
+      description: >
+        A reusable, properly typed helper that resolves the current user
+        from ctx.auth.getUserIdentity(), looks up their membership in a
+        given org, and returns their role. No any types. Throws clear
+        errors for unauthenticated or unauthorized access. Used consistently
+        across ALL data-access functions.
+    - name: row_level_security
+      weight: 3
+      description: >
+        Every query and mutation enforces authorization. Projects are scoped
+        to org membership. Tasks inherit access from their project's org.
+        Write operations check role permissions (admin vs member vs viewer).
+        No query returns data the user shouldn't see.
+    - name: no_bypass_paths
+      weight: 2
+      description: >
+        There are no functions that skip authorization. All CRUD operations
+        on projects and tasks go through the auth check. Edge cases handled:
+        user not in org, user with viewer role trying to write, cross-org
+        access attempts.

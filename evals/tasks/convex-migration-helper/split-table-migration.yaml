@@ -1,0 +1,74 @@
+name: split-table-migration
+skill: convex-migration-helper
+description: >
+  Test whether the agent can handle a complex multi-step migration that
+  splits a table, transforms data, and maintains backwards compatibility.
+skill_focus: |
+  Complex Convex migration patterns: the widen-migrate-narrow workflow across
+  multiple deploys, splitting a denormalized table into normalized tables with
+  references, cursor-based paginated batch processing with self-scheduling,
+  handling the migration window where old and new code run simultaneously,
+  and using the convex-helpers migrations component for production migrations.
+fixture_dir: fixture-split
+prompt: |
+  This Convex app has a denormalized "events" table that stores event data,
+  venue info, and ticket info all in one document. We need to normalize it
+  into three tables for better performance and data integrity.
+
+  Plan and implement this migration:
+
+  1. Create new "venues" and "ticket_types" tables
+  2. Write a migration that:
+     a. For each event, creates a venue document (deduplicating by venue name)
+     b. Moves ticket type data into the ticket_types table with a reference
+        back to the event
+     c. Adds a venueId reference to the event document
+     d. Processes in batches of 50 using cursor-based pagination
+     e. Self-schedules continuation if not done
+     f. Is idempotent (safe to re-run if interrupted)
+  3. Update the schema in stages:
+     a. First deploy: add new tables and optional new fields to events
+     b. After migration: code can read from both old embedded data and
+        new referenced data
+     c. Final deploy (after migration complete): remove old embedded fields
+  4. Update the existing queries to work during AND after the migration
+     (handle both old and new data shapes)
+  5. Write a verification query that checks migration progress
+
+  The migration must be safe to run while the app is live. Users should
+  never see errors or missing data during the migration window.
+timeout_seconds: 300
+max_turns: 30
+scoring:
+  criteria:
+    - name: multi_deploy_workflow
+      weight: 3
+      description: >
+        Agent follows the widen-migrate-narrow pattern: first deploy adds
+        optional fields and new tables, migration runs, then final deploy
+        can tighten the schema. Must explicitly describe or implement the
+        multi-step deployment strategy, not just the final schema.
+    - name: data_deduplication
+      weight: 2
+      description: >
+        Venue creation deduplicates by name (doesn't create duplicate venues
+        for events at the same location). Uses an index or lookup to check
+        for existing venues before inserting.
+    - name: migration_robustness
+      weight: 3
+      description: >
+        Migration uses cursor-based pagination with self-scheduling
+        (ctx.scheduler.runAfter), processes in batches, is idempotent
+        (checks if already migrated before processing), and handles the
+        case where it's re-run after partial completion.
+    - name: dual_read_compatibility
+      weight: 2
+      description: >
+        Queries work during the migration window by reading from both
+        old embedded fields and new referenced tables. Falls back gracefully
+        when new references don't exist yet.
+    - name: progress_verification
+      weight: 1
+      description: >
+        A verification query or function that reports migration progress
+        (how many events migrated vs total, any errors or inconsistencies).

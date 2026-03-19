@@ -11,5 +11,5 @@
     "resolveJsonModule": true
   },
   "include": ["**/*.ts"],
-  "exclude": ["node_modules", "dist", "tasks/**/fixture"]
+  "exclude": ["node_modules", "dist", "tasks/**/fixture", "tasks/**/fixture-*"]
 }
