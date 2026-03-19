@@ -1,4 +1,4 @@
-import { execFile } from "node:child_process";
+import { spawn } from "node:child_process";
 import { AgentRunner, AgentRunOptions, collectFiles } from "./base.js";
 import { AgentModel, AgentResult } from "../types.js";
 
@@ -12,26 +12,35 @@ export class CodexRunner implements AgentRunner {
   async run(options: AgentRunOptions): Promise<AgentResult> {
     const { model, condition, prompt, workDir, timeoutMs } = options;
 
-    // codex CLI: run in quiet/non-interactive mode with full-auto approval
     const args = [
-      "-q", prompt,
-      "--approval-mode", "full-auto",
+      "exec",
+      "--sandbox", "workspace-write",
+      "-C", workDir,
+      prompt,
     ];
 
     const start = Date.now();
 
     const result = await new Promise<{ stdout: string; stderr: string; exitCode: number }>((resolve) => {
-      execFile("codex", args, {
+      const proc = spawn("codex", args, {
         cwd: workDir,
         timeout: timeoutMs,
-        maxBuffer: 10 * 1024 * 1024,
         env: { ...process.env },
-      }, (error, stdout, stderr) => {
-        resolve({
-          stdout: stdout ?? "",
-          stderr: stderr ?? "",
-          exitCode: error ? (error as any).code ?? 1 : 0,
-        });
+        stdio: ["pipe", "pipe", "pipe"],
+      });
+
+      proc.stdin.end();
+
+      let stdout = "";
+      let stderr = "";
+      proc.stdout.on("data", (chunk: Buffer) => { stdout += chunk.toString(); });
+      proc.stderr.on("data", (chunk: Buffer) => { stderr += chunk.toString(); });
+
+      proc.on("close", (code) => {
+        resolve({ stdout, stderr, exitCode: code ?? 1 });
+      });
+      proc.on("error", (err) => {
+        resolve({ stdout, stderr: stderr + String(err), exitCode: 1 });
       });
     });
 

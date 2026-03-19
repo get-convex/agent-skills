@@ -63,9 +63,11 @@ async function setupWorkDir(taskPath: string, condition: Condition, skillName: s
     await mkdir(targetSkillDir, { recursive: true });
     await cp(skillDir, targetSkillDir, { recursive: true });
 
-    // Also create a CLAUDE.md that points to the skill so claude code discovers it
-    const claudeMd = `Read and follow the skill guide at .skills/${skillName}/SKILL.md before starting work.\n`;
-    await writeFile(join(workDir, "CLAUDE.md"), claudeMd);
+    // Create instruction files for each agent type
+    const instruction = `Read and follow the skill guide at .skills/${skillName}/SKILL.md before starting work.\n`;
+    await writeFile(join(workDir, "CLAUDE.md"), instruction);
+    await writeFile(join(workDir, "AGENTS.md"), instruction);
+    await writeFile(join(workDir, "codex.md"), instruction);
   }
 
   return workDir;
