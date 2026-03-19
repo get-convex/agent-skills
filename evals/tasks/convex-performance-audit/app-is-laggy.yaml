@@ -1,0 +1,69 @@
+name: app-is-laggy
+skill: convex-performance-audit
+description: >
+  Cascading diagnosis: multiple interacting performance problems that
+  the agent must find from a single vague symptom. Tests diagnostic
+  depth and the ability to find non-obvious interacting issues.
+skill_focus: |
+  Convex performance diagnosis requiring deep investigation: subscription
+  invalidation fan-out from no-op writes, Date.now() in queries defeating
+  caching, broad read sets causing false OCC conflicts, and the interaction
+  between heartbeat writes and subscription cost. The skill teaches tracing
+  read/write sets and understanding how these interact.
+fixture_dir: fixture-laggy
+prompt: |
+  Users are reporting the app feels "laggy and jumpy" -- the UI flickers
+  and re-renders constantly, especially on the team dashboard. The team
+  dashboard shows:
+  - A list of all team members with online/offline status
+  - Each member's current project
+  - A global activity counter ("X actions today")
+  - User preferences (theme) that affect the UI
+
+  The app has been like this for a while but it's getting worse as more
+  people join the team. No one can figure out why.
+
+  Investigate the code, find ALL the performance issues causing the laggy
+  UI, and fix them. There are multiple interacting problems.
+timeout_seconds: 480
+max_turns: 50
+scoring:
+  criteria:
+    - name: finds_heartbeat_invalidation
+      weight: 3
+      description: >
+        Agent identifies that heartbeat writes to the user document
+        invalidate the team list query, causing it to re-run every
+        time ANY user's heartbeat fires. With 20 users, that's a
+        re-render every 250ms. Must move lastSeen to a separate table.
+    - name: finds_date_now_in_query
+      weight: 2
+      description: >
+        Agent identifies that using Date.now() in the isOnline check
+        inside a query defeats Convex's query cache. The query can
+        never be cached because Date.now() changes constantly.
+    - name: finds_noop_writes
+      weight: 2
+      description: >
+        Agent identifies that updatePreferences patches even when
+        nothing changed, triggering unnecessary subscription
+        invalidation for the theme/UI queries.
+    - name: finds_counter_contention
+      weight: 2
+      description: >
+        Agent identifies that the global activity counter (single
+        document updated by every action) is a hot document causing
+        OCC contention AND subscription invalidation on every action.
+    - name: explains_interaction
+      weight: 2
+      description: >
+        Agent explains how these problems INTERACT: heartbeat writes
+        cause the team list to re-render, which re-reads user docs,
+        which increases the read set, which makes the query more
+        sensitive to further invalidation. Vicious cycle.
+    - name: fixes_all_issues
+      weight: 2
+      description: >
+        Agent fixes all identified issues, not just the most obvious
+        one. Partial fixes leave the UI still laggy because the
+        remaining issues continue causing re-renders.

@@ -1,0 +1,56 @@
+name: cant-login
+skill: convex-setup-auth
+description: >
+  Symptom-based auth diagnosis: users report they can't log in.
+  Agent must investigate the code and find the auth bugs without
+  being told what category of problem it is.
+skill_focus: |
+  Convex auth debugging: understanding how ctx.auth.getUserIdentity()
+  works, tokenIdentifier resolution, proper index on tokenIdentifier,
+  the difference between Clerk identity and Convex user records, and
+  common auth integration mistakes.
+fixture_dir: fixture-cantlogin
+prompt: |
+  Users are reporting "Permission denied" errors after logging in with
+  Clerk. They can see the Clerk login UI works fine (they get redirected
+  back to the app), but every Convex query that requires auth fails.
+
+  A junior dev set up the auth integration last week. Something is wrong
+  with the Convex side. Investigate the code, find what's broken, and
+  fix it. The Clerk dashboard side is configured correctly -- the problem
+  is in the Convex code.
+timeout_seconds: 480
+max_turns: 50
+scoring:
+  criteria:
+    - name: finds_identity_mismatch
+      weight: 3
+      description: >
+        Agent identifies that getCurrentUser looks up by email instead
+        of tokenIdentifier. ctx.auth.getUserIdentity() returns a
+        tokenIdentifier, and the user lookup must match on that field,
+        not email. This is the primary auth bug.
+    - name: finds_missing_index
+      weight: 2
+      description: >
+        Agent identifies that the users table has no index on
+        tokenIdentifier, making the lookup O(n) even after fixing
+        the field. Must add .index("by_token", ["tokenIdentifier"]).
+    - name: finds_no_user_creation
+      weight: 2
+      description: >
+        Agent identifies that there's no upsert/creation path for new
+        users. When a user logs in for the first time via Clerk, they
+        have no entry in the users table, so getCurrentUser returns null
+        and the auth check fails. Must add user creation on first login.
+    - name: fixes_are_correct
+      weight: 3
+      description: >
+        All fixes work together: tokenIdentifier lookup, proper index,
+        upsert on first login, and the auth helper returns the correct
+        user. The fix doesn't break existing functionality.
+    - name: no_any_types
+      weight: 1
+      description: >
+        Fixes use proper types, not any casts. Auth helper has correct
+        context parameter types.

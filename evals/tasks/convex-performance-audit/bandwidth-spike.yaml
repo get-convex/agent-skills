@@ -1,0 +1,55 @@
+name: bandwidth-spike
+skill: convex-performance-audit
+description: >
+  Symptom-based diagnosis: agent is told bandwidth spiked, must figure out
+  why from the code. No hints about what category of problem it is.
+skill_focus: |
+  Convex performance diagnosis from symptoms: reading code to identify
+  unbounded reads, large document returns, N+1 query patterns, and
+  unnecessary data transfer. The skill teaches signal routing from
+  symptoms to root causes, and specific fix patterns for each.
+fixture_dir: fixture-bandwidth
+prompt: |
+  Our Convex bill jumped 3x this month. The team says nothing changed
+  except user growth. The app is an internal knowledge base with articles,
+  comments, and search.
+
+  Investigate the codebase, find what's causing the bandwidth spike, and
+  fix it. Explain what you found and why it gets worse with more users.
+timeout_seconds: 480
+max_turns: 50
+scoring:
+  criteria:
+    - name: identifies_full_doc_returns
+      weight: 3
+      description: >
+        Agent identifies that the list query returns full article documents
+        (including the large 'content' field) when the list page only needs
+        title, author, and date. This multiplies bandwidth with every page
+        load. Must fix by projecting to only needed fields.
+    - name: identifies_unbounded_search
+      weight: 2
+      description: >
+        Agent identifies that the search function does .collect() on the
+        entire articles table and filters in JS, reading every document
+        on every search. Must fix with a search index or bounded read.
+    - name: identifies_n_plus_one
+      weight: 2
+      description: >
+        Agent identifies that the article detail page fetches comments,
+        then each comment triggers a separate author lookup -- an N+1
+        pattern that grows with comment count. Must fix with a batched
+        query or denormalized author name.
+    - name: explains_growth_connection
+      weight: 2
+      description: >
+        Agent explains WHY the problem scales with user growth: more users
+        means more page loads (full doc returns), more searches (full scans),
+        and more comments (N+1 lookups). Not just "it's slow" but the
+        specific multiplier.
+    - name: fixes_are_correct
+      weight: 2
+      description: >
+        The actual code fixes work: projected fields in list query,
+        bounded/indexed search, batched author lookup in comments.
+        No new bugs introduced.

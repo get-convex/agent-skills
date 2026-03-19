@@ -1,0 +1,60 @@
+name: add-unread-badges
+skill: convex-performance-audit
+description: >
+  Implicit architecture task: a feature request that requires a new data
+  shape for scalability, but the task only asks for the feature, not the
+  architecture. Tests whether the agent proactively avoids anti-patterns.
+skill_focus: |
+  Convex performance awareness during feature development: recognizing when
+  a naive implementation will cause scaling problems and proactively choosing
+  the right data shape. Specifically: using maintained counters instead of
+  scan-and-count, separating read receipts from message documents, and
+  avoiding subscription invalidation from marking messages as read.
+fixture_dir: fixture-unread
+prompt: |
+  Add unread message badges to this chat app. Requirements:
+
+  1. Each channel should show how many unread messages the current user has
+  2. When a user opens a channel, mark all messages in it as read
+  3. The sidebar should show the unread count next to each channel name
+  4. The count should update in real-time when new messages arrive
+
+  The app currently has channels and messages but no read tracking.
+  Implement this feature.
+timeout_seconds: 480
+max_turns: 50
+scoring:
+  criteria:
+    - name: separate_read_tracking
+      weight: 3
+      description: >
+        Agent does NOT add a readBy array to the messages table. Instead
+        uses a separate table for read tracking (e.g. read_cursors with
+        userId + channelId + lastReadAt, or read_receipts). readBy arrays
+        cause every mark-as-read to write to the message doc, invalidating
+        all subscriptions. Score 1 if readBy on messages, 5 if separate.
+    - name: efficient_count
+      weight: 3
+      description: >
+        Agent does NOT count unreads by scanning all messages and filtering.
+        Uses an efficient approach: either a cursor-based "messages after
+        lastReadAt" count with an index, or a maintained counter. Must not
+        .collect() all messages to count. Score based on approach quality.
+    - name: mark_read_no_write_amplification
+      weight: 2
+      description: >
+        Marking a channel as read does NOT write to every message document.
+        Instead updates a single read cursor/receipt per user+channel.
+        Score 1 if it patches every message, 5 if single cursor update.
+    - name: realtime_updates
+      weight: 2
+      description: >
+        Unread counts update reactively when new messages arrive in a
+        channel. The subscription model supports this without polling.
+    - name: scalability_awareness
+      weight: 2
+      description: >
+        Agent demonstrates awareness that the implementation needs to
+        work at scale (many channels, many messages, many users).
+        Either explains tradeoffs or proactively chooses patterns that
+        scale. Not just "it works" but "it works under load."
