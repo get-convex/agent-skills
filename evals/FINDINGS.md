@@ -99,6 +99,28 @@ Not tested with construction tasks. Repair tasks showed no delta -- both models 
 5. **Component skill is uniquely valuable** -- the only one that helps even on repair tasks, suggesting Convex component patterns are genuinely not in training data
 6. **Increase timeouts for with-skill runs** -- agents need time to read the skill before coding. 480s/50 turns is better than 300s/30.
 
+## Actionable Skill Improvements (based on remaining score gaps)
+
+### Performance audit: bounded_reads (3-4/5 with skill)
+
+Both models still use unbounded `.collect()` for counting (e.g., unread message count) even with the skill. The skill says "Never `.collect()` without a limit" but doesn't address the "but I need the total count" case. `function-budget.md` teaches `.take(N)` and pagination, but models need to count ALL items for badges/counters.
+
+**Fix:** Add explicit guidance to `function-budget.md` or `subscription-cost.md`:
+- "When you need a count, do NOT scan and count in JS. Use a maintained counter table, the `@convex-dev/aggregate` component, or a precomputed summary row updated by mutations."
+- Show the counter pattern as the default for any "count of X" requirement.
+
+### Component: callback registration pattern (3/5 with skill)
+
+Both models pass callback functions per-call instead of registering at component install time. The component skill mentions wrappers but doesn't show the install-time callback registration pattern explicitly.
+
+**Fix:** Add a concrete callback registration example to `local-components.md` showing how the app passes a function reference when installing the component, and the component stores/uses it.
+
+### Auth: query vs mutation context typing (4/5 with skill)
+
+Models use `ctx as MutationCtx` type assertions in shared auth helpers because the same helper is used from both queries and mutations. The skill could show the clean pattern (separate query/mutation helpers or a generic helper with proper type narrowing).
+
+**Fix:** Add a "Context typing" section to the auth skill showing how to write helpers that work from both query and mutation context without type assertions.
+
 ## Methodology Notes
 
 - All runs use `claude -p` (print mode) with `--permission-mode bypassPermissions`
