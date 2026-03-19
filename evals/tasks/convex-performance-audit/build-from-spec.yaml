@@ -1,0 +1,86 @@
+name: build-from-spec
+skill: convex-performance-audit
+description: >
+  Test whether the skill prevents the agent from introducing Convex-specific
+  performance anti-patterns when building from scratch. This is a construction
+  task, not a repair task -- the agent isn't told what bugs to avoid.
+skill_focus: |
+  Convex-specific performance patterns that agents commonly get wrong when
+  building new features: using .filter() instead of indexes, unbounded
+  .collect() calls, storing read receipts on the source document instead
+  of a separate table, no-op write prevention, subscription invalidation
+  awareness, Date.now() in queries, and understanding that Convex .filter()
+  does NOT push predicates to storage.
+fixture_dir: fixture-buildspec
+prompt: |
+  Build the Convex backend for a team chat application with these features:
+
+  1. Schema: users, channels, messages, and user preferences
+  2. Users have name, email, and an online/offline status that updates
+     every 10 seconds via a heartbeat
+  3. Channels have a name, description, and a flag for whether they were
+     recently active (activity in the last hour)
+  4. Messages belong to a channel and have an author. The app needs to
+     track which users have read each message for unread badges.
+  5. A query to list channels, showing only recently-active ones
+  6. A query to list messages in a channel, including author names
+     (the frontend renders author name next to each message)
+  7. A query to get unread message count per channel for a user
+  8. A mutation to send a message
+  9. A mutation to mark messages as read
+  10. A mutation to update user preferences (theme, notification settings)
+      that only writes when values actually change
+  11. A heartbeat mutation that updates user online status
+
+  Build this with proper Convex patterns. Use indexes where appropriate.
+  Think carefully about what happens at scale with many concurrent users.
+timeout_seconds: 300
+max_turns: 30
+scoring:
+  criteria:
+    - name: heartbeat_isolation
+      weight: 3
+      description: >
+        Agent puts online status / lastSeen in a SEPARATE document or table
+        from user profile data, so heartbeat writes don't invalidate queries
+        that only need user name/email. If lastSeen is on the user doc,
+        score 1. If separated, score 5.
+    - name: read_receipts_separate
+      weight: 3
+      description: >
+        Agent stores read receipts in a SEPARATE table (e.g. read_receipts
+        with userId + messageId or channelId + lastReadAt) rather than a
+        readBy array on the message document. readBy arrays on messages
+        cause every mark-as-read to write to the message, invalidating all
+        subscriptions. If readBy is on messages, score 1. If separate
+        table, score 5.
+    - name: no_date_now_in_queries
+      weight: 2
+      description: >
+        Agent does NOT use Date.now() inside query handlers to determine
+        "recently active" channels. Instead uses a boolean flag, a
+        client-passed timestamp, or a cron-updated field. If Date.now()
+        is in a query, score 1. If avoided, score 5.
+    - name: noop_write_check
+      weight: 2
+      description: >
+        The preferences update mutation checks whether values actually
+        changed before writing. If it always patches regardless, score 1.
+        If it diffs first, score 5.
+    - name: no_filter_as_index
+      weight: 2
+      description: >
+        Agent uses .withIndex() for all filtering, not Convex .filter()
+        method (which does NOT push to storage). If .filter() is used
+        where an index could work, score based on severity.
+    - name: bounded_reads
+      weight: 1
+      description: >
+        Agent uses .take(N) or pagination instead of unbounded .collect()
+        on tables that can grow large (messages, read receipts).
+    - name: batched_author_lookup
+      weight: 1
+      description: >
+        Message list query includes author names via server-side join
+        rather than expecting the frontend to fetch each author separately
+        (N+1 pattern).

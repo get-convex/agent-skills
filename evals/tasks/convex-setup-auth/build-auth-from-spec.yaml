@@ -1,0 +1,69 @@
+name: build-auth-from-spec
+skill: convex-setup-auth
+description: >
+  Test whether the skill prevents the agent from introducing auth anti-patterns
+  when building from scratch. Construction task, not repair.
+skill_focus: |
+  Convex authentication patterns: centralized getCurrentUser helper using
+  ctx.auth.getUserIdentity() with tokenIdentifier resolution, proper typing
+  (no any casts), consistent auth checks in ALL data-access functions,
+  users table with tokenIdentifier index, and upsert-on-first-login pattern.
+fixture_dir: fixture-buildauth
+prompt: |
+  Build the Convex backend for a team document editor with these features:
+
+  1. Users authenticate via Clerk. Build the Convex side of auth.
+  2. Schema: users, documents, and document_shares
+  3. Users have name, email, and tokenIdentifier for identity resolution
+  4. Documents have a title, content, ownerId, and createdAt
+  5. Document shares grant other users access to a document (userId + documentId + permission level: "view" or "edit")
+  6. Auth requirements:
+     - A reusable helper to get the current authenticated user
+     - The helper should resolve identity via ctx.auth.getUserIdentity()
+       and look up the user by tokenIdentifier
+     - If the user doesn't exist yet, create them (upsert on first login)
+     - All queries and mutations must verify the user is authenticated
+     - Users can only see documents they own OR have been shared with
+     - Only owners and users with "edit" permission can modify documents
+     - Only owners can share or delete documents
+  7. Queries: listMyDocuments, getDocument, listShares
+  8. Mutations: createDocument, updateDocument, deleteDocument, shareDocument
+
+  Use proper Convex types throughout. Do NOT use `any` type annotations.
+timeout_seconds: 300
+max_turns: 30
+scoring:
+  criteria:
+    - name: centralized_auth_helper
+      weight: 3
+      description: >
+        Agent creates a single reusable auth helper that uses
+        ctx.auth.getUserIdentity() and resolves via tokenIdentifier
+        lookup. Not duplicated across functions. Properly typed with
+        the correct Convex context type (QueryCtx or MutationCtx),
+        NOT any. Returns the user doc, throws if unauthenticated.
+    - name: upsert_pattern
+      weight: 2
+      description: >
+        Auth helper or a dedicated function implements upsert-on-first-login:
+        if the user has a valid identity but no row in the users table, it
+        creates one. Does NOT assume users already exist.
+    - name: consistent_auth_enforcement
+      weight: 3
+      description: >
+        EVERY query and mutation calls the auth helper. No function
+        skips the auth check. Data is scoped to the current user --
+        listMyDocuments only returns docs the user owns or has been
+        shared with. Write operations check ownership/permission level.
+    - name: no_any_types
+      weight: 2
+      description: >
+        No `any` type annotations or `as any` casts anywhere in the
+        codebase. Context parameters, return types, and helper functions
+        are all properly typed.
+    - name: authorization_correctness
+      weight: 2
+      description: >
+        Permission checks are correct: viewers can read but not edit,
+        editors can edit but not delete/share, only owners can delete
+        and share. No privilege escalation paths.

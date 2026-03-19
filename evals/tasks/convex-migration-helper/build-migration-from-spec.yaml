@@ -1,0 +1,68 @@
+name: build-migration-from-spec
+skill: convex-migration-helper
+description: >
+  Test whether the skill prevents the agent from introducing migration
+  anti-patterns when asked to evolve an existing schema. Construction task.
+skill_focus: |
+  Convex migration patterns: additive schema changes with v.optional() for
+  new required fields, multi-deploy widen-migrate-narrow workflow, cursor-based
+  paginated batch processing with self-scheduling, dual-read compatibility
+  during migration window, and NOT making breaking schema changes that would
+  fail deployment.
+fixture_dir: fixture-buildmig
+prompt: |
+  This Convex app has a "posts" table for a blog. The product team wants
+  to add these features. Implement ALL the schema and code changes:
+
+  1. Posts currently have title and body. Add a "category" field that
+     should be required for all posts going forward, and backfill
+     existing posts with category "uncategorized".
+  2. Add a "tags" field (array of strings) to posts.
+  3. Add a "publishedAt" field -- posts can be drafts (publishedAt is null)
+     or published (publishedAt is a timestamp). Add a query to list only
+     published posts, ordered by publishedAt.
+  4. Add an "authorId" field referencing a new "authors" table.
+     Existing posts should get a default author created during migration.
+  5. Write migrations for all backfill operations.
+  6. Make sure the existing listPosts and getPost queries work correctly
+     both DURING the migration (when some posts are migrated and some
+     aren't) and AFTER (when all posts are migrated).
+
+  The app must never break during deployment. All changes must be
+  deployment-safe.
+timeout_seconds: 300
+max_turns: 30
+scoring:
+  criteria:
+    - name: additive_schema
+      weight: 3
+      description: >
+        New fields are added as v.optional() initially so existing documents
+        remain valid. Agent does NOT make category or authorId required in
+        the first deploy (that would fail because existing docs don't have
+        them). Score 1 if any field is required without migration.
+    - name: migration_batching
+      weight: 2
+      description: >
+        Migration uses cursor-based pagination with ctx.scheduler.runAfter
+        for self-scheduling continuation. Does NOT try to process all
+        documents in a single mutation (would hit transaction limits).
+    - name: dual_read_queries
+      weight: 3
+      description: >
+        Existing queries handle both old format (missing fields) and new
+        format. Uses fallbacks like post.category ?? "uncategorized" and
+        handles missing authorId gracefully. Does NOT assume all posts
+        have the new fields.
+    - name: correct_index_for_published
+      weight: 2
+      description: >
+        Creates an index on publishedAt for the published posts query.
+        Uses .withIndex() not .filter(). Handles the draft case correctly
+        (publishedAt is optional/null, published posts have a number).
+    - name: no_breaking_deploy
+      weight: 2
+      description: >
+        No schema change would cause npx convex deploy to fail.
+        All new fields are optional in the schema until after migration
+        completes. No field type changes on existing fields.

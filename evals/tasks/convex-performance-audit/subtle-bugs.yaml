@@ -1,0 +1,92 @@
+name: subtle-perf-bugs
+skill: convex-performance-audit
+description: >
+  Test whether the agent can find subtle, Convex-specific performance bugs
+  that look correct to someone who knows general backend patterns but not
+  Convex internals. Every bug in this fixture appears reasonable but is
+  wrong in ways unique to Convex's execution model.
+skill_focus: |
+  Subtle Convex-specific performance pitfalls that differ from standard
+  database/backend assumptions:
+  - .filter() does NOT push predicates to storage (unlike SQL WHERE) -- it
+    still scans all documents, same as JS filtering
+  - No-op writes still trigger invalidation, replication, and subscription
+    re-runs -- must diff before patching
+  - readBy arrays on messages mean every mark-as-read writes the message doc,
+    invalidating all subscriptions reading that message
+  - Redundant indexes (by_foo + by_foo_and_bar) waste write overhead
+  - ctx.runQuery inside mutations has overhead vs plain helper functions
+  - Unbounded .collect() after .withIndex() still reads all matching docs
+  - undefined !== false in index queries, so optional boolean fields miss
+    old documents where the field doesn't exist
+  - Date.now() in queries defeats query caching
+fixture_dir: fixture-subtle
+prompt: |
+  This Convex app is a project management tool. The code looks reasonable
+  and uses indexes, but it has several subtle performance bugs that are
+  specific to how Convex works internally. These are NOT obvious -- they
+  require understanding Convex's execution model.
+
+  Find and fix ALL performance issues. For each one, explain specifically
+  why it's a problem in Convex (not just "it's slow"). Some of these bugs
+  would be fine in a traditional database but are problematic in Convex.
+
+  Hints: there are at least 7 distinct performance issues across the
+  codebase. Look carefully at:
+  - How filtering works in Convex vs SQL
+  - What triggers subscription invalidation
+  - What counts against transaction budgets
+  - How indexes interact with optional/missing fields
+  - Write amplification patterns
+timeout_seconds: 300
+max_turns: 30
+scoring:
+  criteria:
+    - name: filter_not_index
+      weight: 2
+      description: >
+        Agent identifies that Convex .filter() does NOT push predicates to
+        storage -- it scans all documents in the range and filters in the
+        Convex runtime, same cost as JS .filter(). The listActive query
+        uses .filter() thinking it's like SQL WHERE, but it still scans
+        the full table. Must replace with .withIndex().
+    - name: noop_write_detection
+      weight: 2
+      description: >
+        Agent identifies that updateSettings patches the document even
+        when values haven't changed, which triggers subscription
+        invalidation, replication, and downstream sync for zero benefit.
+        Must add a diff check before patching.
+    - name: readby_array_write_amplification
+      weight: 3
+      description: >
+        Agent identifies that storing readBy as an array on the message
+        document means every mark-as-read WRITES to the message, which
+        invalidates every subscription that reads that message. This is
+        the hardest bug to spot. Must recommend a separate read_receipts
+        table instead.
+    - name: redundant_indexes
+      weight: 1
+      description: >
+        Agent identifies that by_project and by_project_and_status are
+        redundant -- the compound index serves both query patterns.
+        The extra index wastes write overhead on every insert/patch/delete.
+    - name: run_query_overhead
+      weight: 1
+      description: >
+        Agent identifies that ctx.runQuery inside the createTask mutation
+        has overhead compared to calling a plain helper function. Both
+        run in the same transaction but runQuery has per-call cost.
+    - name: unbounded_collect
+      weight: 1
+      description: >
+        Agent identifies that getProjectTasks uses .collect() without
+        .take() on a potentially large result set, which could hit the
+        32,000 document scan limit as the table grows.
+    - name: undefined_vs_false_index
+      weight: 2
+      description: >
+        Agent identifies that the isArchived index query using
+        .eq("isArchived", false) will miss old documents where isArchived
+        is undefined (not yet backfilled). In Convex, undefined !== false
+        in index entries. Must handle both cases or backfill first.
