@@ -52,6 +52,46 @@ A skill should not exist just to provide generic background information. If cont
 
 Reference material is still useful inside a skill, but only when it helps the agent complete a concrete task.
 
+## Evals
+
+The `evals/` directory contains a framework for measuring whether skills actually help agents produce better code. It runs agents with and without each skill, then blind-scores the results.
+
+### Quick start
+
+```bash
+cd evals
+npm install
+
+# Run an eval (uses your existing claude/codex CLI auth)
+npx tsx run.ts --task optimize-query --models sonnet --runs 1
+
+# Score results (needs ANTHROPIC_API_KEY for opus judge, OPENAI_API_KEY for codex judge)
+npx tsx score.ts --run-id <run-id> --judges opus
+
+# Generate comparison report with failure analysis
+npx tsx report.ts --run-id <run-id>
+```
+
+### Available tasks
+
+| Task | Skill | What it tests |
+|------|-------|---------------|
+| `scaffold-react-app` | convex-quickstart | Build a Convex + React app from scratch |
+| `add-clerk-auth` | convex-setup-auth | Add auth to an existing app |
+| `add-field-migration` | convex-migration-helper | Safely migrate schema + backfill data |
+| `optimize-query` | convex-performance-audit | Fix perf issues in existing code |
+| `extract-component` | convex-create-component | Extract reusable component from app code |
+
+### Multi-model comparison
+
+```bash
+npx tsx run.ts --task scaffold-react-app --models sonnet,opus,codex --runs 3
+npx tsx score.ts --run-id <run-id> --judges opus,codex
+npx tsx report.ts --run-id <run-id>
+```
+
+The report shows per-criterion scores, overall totals, and deltas (skill improvement over baseline). The failure analysis section gives actionable feedback for iterating on skills without overfitting to specific eval tasks.
+
 ## Contributing
 
 Before contributing, review the core Agent Skills docs:
