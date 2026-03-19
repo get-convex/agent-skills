@@ -16,6 +16,13 @@ prompt: |
   4. Add appropriate indexes to the schema for the query patterns used.
 
   Explain each change and why it improves performance.
+skill_focus: |
+  Convex performance optimization: using indexes instead of full table scans,
+  eliminating JS-side filtering, reducing OCC (Optimistic Concurrency Control)
+  contention through write splitting and scheduling, and understanding Convex's
+  read/write cost model. The skill teaches patterns like .withIndex() for queries,
+  pre-aggregated tables for stats, ctx.scheduler.runAfter for write isolation,
+  and sharded counters for hot documents.
 timeout_seconds: 300
 max_turns: 30
 scoring:

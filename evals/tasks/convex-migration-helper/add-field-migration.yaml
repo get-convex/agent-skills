@@ -15,6 +15,12 @@ prompt: |
 
   The migration should be safe to run while the app is live (zero downtime).
   Use a paginated approach that processes records in batches to avoid timeout.
+skill_focus: |
+  Convex schema migration: additive schema evolution with v.optional() for new fields,
+  paginated batch migrations that avoid timeout, idempotent migration functions,
+  zero-downtime compatibility (existing code works before and after migration),
+  and correct use of Convex's pagination API for cursor-based batch processing.
+  The skill teaches safe migration patterns specific to Convex's document database.
 timeout_seconds: 300
 max_turns: 30
 scoring:

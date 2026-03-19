@@ -18,6 +18,13 @@ prompt: |
 
   The component should have clear boundaries: its own tables, no direct
   access to app tables, and a clean public API.
+skill_focus: |
+  Convex component architecture: correct component directory structure
+  (component-name/convex/ for source files), convex.config.ts for component
+  definition, isolated schema (component tables separate from app tables),
+  clean public API surface, proper component installation and reference patterns,
+  and app-facing wrappers. The skill teaches Convex's specific component model
+  which differs from generic module extraction.
 timeout_seconds: 300
 max_turns: 30
 scoring:

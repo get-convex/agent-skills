@@ -11,6 +11,7 @@ export interface EvalTask {
   prompt: string;
   timeout_seconds: number;
   max_turns: number;
+  skill_focus: string; // what the skill is supposed to help with -- guides the judge
   scoring: {
     criteria: ScoringCriterion[];
   };

@@ -17,6 +17,12 @@ prompt: |
 
   Set up the project so it could be run with `npx convex dev` and a frontend dev server.
   Do not actually start any dev servers.
+skill_focus: |
+  Convex project scaffolding: correct project structure, proper ConvexProvider
+  wiring, correct env var names per framework, schema definition with validators,
+  query/mutation function patterns with args and returns, and React hook integration
+  (useQuery, useMutation). The skill teaches using npm create convex@latest for
+  new projects and manual provider setup for existing apps.
 timeout_seconds: 300
 max_turns: 30
 scoring:

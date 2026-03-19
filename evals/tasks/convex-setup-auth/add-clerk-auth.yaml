@@ -16,6 +16,12 @@ prompt: |
   Use Clerk as the auth provider. Set up the Convex side of the integration
   (schema, auth helpers, protected functions). You do not need to set up the
   Clerk dashboard or environment variables, just the code.
+skill_focus: |
+  Convex authentication integration: creating a users table with tokenIdentifier
+  index for identity resolution, building a reusable getCurrentUser helper using
+  ctx.auth.getUserIdentity(), enforcing auth checks in all data-access functions,
+  scoping data to the current user, and properly typed auth patterns (no any types).
+  The skill teaches centralized auth helpers and additive schema changes for user tables.
 timeout_seconds: 300
 max_turns: 30
 scoring:
