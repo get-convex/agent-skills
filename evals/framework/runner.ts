@@ -1,4 +1,5 @@
 import { mkdir, cp, readFile, writeFile, rm } from "node:fs/promises";
+import { execFileSync } from "node:child_process";
 import { join, resolve, dirname } from "node:path";
 import { randomUUID } from "node:crypto";
 import { tmpdir } from "node:os";
@@ -69,6 +70,11 @@ async function setupWorkDir(taskPath: string, condition: Condition, skillName: s
     await writeFile(join(workDir, "AGENTS.md"), instruction);
     await writeFile(join(workDir, "codex.md"), instruction);
   }
+
+  // Init git repo so codex trusts the directory
+  execFileSync("git", ["init"], { cwd: workDir, stdio: "ignore" });
+  execFileSync("git", ["add", "."], { cwd: workDir, stdio: "ignore" });
+  execFileSync("git", ["commit", "-m", "init", "--allow-empty"], { cwd: workDir, stdio: "ignore" });
 
   return workDir;
 }
