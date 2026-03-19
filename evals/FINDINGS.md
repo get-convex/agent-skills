@@ -22,8 +22,11 @@ When we ask a model to "build a team chat app with these features," it introduce
 
 | Model | Baseline | With Skill | Delta |
 |-------|----------|------------|-------|
-| Opus | 3.29 | 5.00 | **+1.71** |
-| Sonnet | 3.50 | 4.93 | **+1.43** |
+| Opus (run 1) | 3.29 | 5.00 | **+1.71** |
+| Opus (run 2) | 3.50 | 4.86 | **+1.36** |
+| Sonnet (run 1) | 3.14 | 4.50 | **+1.36** |
+| Sonnet (run 2) | 3.50 | 4.93 | **+1.43** |
+| **Average** | **3.36** | **4.82** | **+1.47** |
 
 What models get wrong without the skill:
 - Put heartbeat/lastSeen on user doc (1/5 -> 5/5) -- causes subscription invalidation fan-out
