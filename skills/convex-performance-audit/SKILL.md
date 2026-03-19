@@ -33,11 +33,13 @@ Diagnose and fix performance problems in Convex applications, one problem class 
 
 Start with the strongest signal available:
 
-1. If deployment Health insights are already available from the user or the current context, treat them as a first-class source of performance signals.
-2. If CLI insights are available, run `npx convex insights --details`. Use `--prod`, `--preview-name`, or `--deployment-name` when needed.
+1. Run `node <skill-path>/scripts/convex-perf-lint.mjs` to scan the codebase for schema-level and subscription anti-patterns (readBy arrays, Date.now() in queries, heartbeat on profile tables, redundant indexes, collect-then-count). This catches issues that eslint does not cover.
+2. If the project has `@convex-dev/eslint-plugin` installed, run eslint to catch function-level issues (unbounded .collect(), .filter() usage). If not installed, consider recommending it.
+3. If deployment Health insights are already available from the user or the current context, treat them as a first-class source of performance signals.
+4. If CLI insights are available, run `npx convex insights --details`. Use `--prod`, `--preview-name`, or `--deployment-name` when needed.
    - If the local repo's Convex CLI is too old to support `insights`, try `npx -y convex@latest insights --details` before giving up.
-3. If the repo already uses `convex-doctor`, you may treat its findings as hints. Do not require it, and do not treat it as the source of truth.
-4. If runtime signals are unavailable, audit from code anyway, but keep the guardrails above in mind. Lack of insights is not proof of health, but it is also not proof that a large refactor is warranted.
+5. If the repo already uses `convex-doctor`, you may treat its findings as hints. Do not require it, and do not treat it as the source of truth.
+6. If runtime signals are unavailable, audit from code anyway, but keep the guardrails above in mind. Lack of insights is not proof of health, but it is also not proof that a large refactor is warranted.
 
 ## Signal Routing
 
@@ -133,6 +135,7 @@ Also check the official [Convex Best Practices](https://docs.convex.dev/understa
 
 ## Checklist
 
+- [ ] Ran `convex-perf-lint.mjs` and addressed all errors
 - [ ] Gathered signals from insights, dashboard, or code audit
 - [ ] Identified the problem class and read the matching reference
 - [ ] Scoped one concrete user flow or function path
@@ -141,3 +144,4 @@ Also check the official [Convex Best Practices](https://docs.convex.dev/understa
 - [ ] Applied fixes from the reference, following the recommended fix order
 - [ ] Fixed sibling functions consistently
 - [ ] Verified behavior and confirmed no regressions
+- [ ] Re-ran `convex-perf-lint.mjs` and confirmed no remaining issues

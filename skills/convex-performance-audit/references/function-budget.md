@@ -68,13 +68,71 @@ const messages = await ctx.db
   .take(50);
 ```
 
-### 2. Read smaller shapes
+### 2. Don't scan to count
+
+If you need a count (items in a list, pending tasks, totals for a badge), do NOT collect all documents and count them. This is the most common budget mistake because `.collect().length` looks simple but scans every matching document.
+
+```ts
+// Bad: scans all matching documents just to count them
+const items = await ctx.db
+  .query("tasks")
+  .withIndex("by_project", (q) => q.eq("projectId", args.projectId))
+  .collect();
+return items.filter((t) => t.status === "pending").length;
+```
+
+Three alternatives, from simplest to most robust:
+
+**Option A: Bounded range counting**
+
+If you can narrow the set with an index range (e.g., items created after a timestamp), scan only that range instead of the full history.
+
+```ts
+// Better: only scan the relevant range
+const recent = await ctx.db
+  .query("tasks")
+  .withIndex("by_project_and_created", (q) =>
+    q.eq("projectId", args.projectId).gt("createdAt", args.since)
+  )
+  .collect();
+return recent.length;
+```
+
+This still scans, but the set is bounded to the range, not the entire table.
+
+**Option B: Maintained counter**
+
+Keep a counter document that mutations increment and decrement. No scanning at read time.
+
+```ts
+// Counter table: { entityId, metric, count }
+
+// Write path: increment/decrement when items are added/removed/changed
+// Read path: single document lookup
+const counter = await ctx.db
+  .query("counters")
+  .withIndex("by_entity_metric", (q) =>
+    q.eq("entityId", args.projectId).eq("metric", "pending_tasks")
+  )
+  .first();
+return counter?.count ?? 0;
+```
+
+Reads are O(1). Writes maintain the counter as a side effect of the mutation that changes the data. Use `ctx.scheduler.runAfter` to update counters outside the main transaction if contention is a concern.
+
+**Option C: Aggregate component**
+
+The [`@convex-dev/aggregate`](https://www.npmjs.com/package/@convex-dev/aggregate) component maintains denormalized COUNT, SUM, and MAX values efficiently. Use it for leaderboards, totals, dashboard stats, or any metric that would otherwise require scanning many rows.
+
+Choose the simplest option that meets the scaling requirement. For per-entity counts displayed in a UI (badges, sidebar counts), maintained counters (Option B) are usually the right choice. For global aggregates, prefer the aggregate component (Option C).
+
+### 3. Read smaller shapes
 
 If the list page only needs title, author, and date, do not read full documents with rich content fields.
 
 Use digest or summary tables for hot list pages. See `hot-path-rules.md` for the digest table pattern.
 
-### 3. Break large mutations into batches
+### 4. Break large mutations into batches
 
 If a mutation needs to update hundreds of documents, split it into a self-scheduling chain.
 
@@ -116,7 +174,7 @@ export const backfillBatch = internalMutation({
 });
 ```
 
-### 4. Move heavy work to actions
+### 5. Move heavy work to actions
 
 Queries and mutations run inside Convex's transactional runtime with strict budgets. If you need to do CPU-intensive computation, call external APIs, or process large files, use an action instead.
 
@@ -142,7 +200,7 @@ export const processUpload = action({
 });
 ```
 
-### 5. Trim return values
+### 6. Trim return values
 
 Only return what the client needs. If a query fetches full documents but the component only renders a few fields, map the results before returning.
 
@@ -170,7 +228,7 @@ export const list = query({
 });
 ```
 
-### 6. Replace `ctx.runQuery` and `ctx.runMutation` with helper functions
+### 7. Replace `ctx.runQuery` and `ctx.runMutation` with helper functions
 
 Inside queries and mutations, `ctx.runQuery` and `ctx.runMutation` have overhead compared to calling a plain TypeScript helper function. They run in the same transaction but pay extra per-call cost.
 
@@ -196,7 +254,7 @@ export const createProject = mutation({
 
 Exception: components require `ctx.runQuery`/`ctx.runMutation`. Use them there, but prefer helpers everywhere else.
 
-### 7. Avoid unnecessary `runAction` calls
+### 8. Avoid unnecessary `runAction` calls
 
 `runAction` from within an action creates a separate function invocation with its own memory and CPU budget. The parent action just sits idle waiting. Replace with a plain TypeScript function call unless you need a different runtime (e.g. calling Node.js code from the Convex runtime).
 
