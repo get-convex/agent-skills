@@ -87,7 +87,7 @@ async function scoreWithOpenAI(prompt: string, model: string): Promise<string> {
 
 async function callJudge(judge: JudgeModel, prompt: string): Promise<string> {
   if (judge === "opus") {
-    return scoreWithAnthropic(prompt, "claude-opus-4-6-20250514");
+    return scoreWithAnthropic(prompt, "claude-opus-4-20250514");
   } else if (judge === "codex") {
     // Use o3 as the judge model via OpenAI
     return scoreWithOpenAI(prompt, "o3");
