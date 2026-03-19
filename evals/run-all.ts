@@ -25,12 +25,22 @@ const CONSTRUCTION_TASKS = [
   "build-migration-from-spec", // migration
 ];
 
+// Cascading diagnosis tasks -- show skill impact on multi-cause debugging
+const DIAGNOSIS_TASKS = [
+  "app-is-laggy",              // perf audit (cascading)
+];
+
+// Implicit architecture tasks -- feature requests requiring non-obvious data shapes
+const ARCHITECTURE_TASKS = [
+  "add-unread-badges",         // perf audit (implicit architecture)
+];
+
 // Repair tasks that show component skill impact
 const REPAIR_TASKS = [
   "extract-component",         // component (repair shows delta)
 ];
 
-const ALL_TASKS = [...CONSTRUCTION_TASKS, ...REPAIR_TASKS];
+const ALL_TASKS = [...CONSTRUCTION_TASKS, ...DIAGNOSIS_TASKS, ...ARCHITECTURE_TASKS, ...REPAIR_TASKS];
 
 async function main() {
   const summaryRows: Array<{
