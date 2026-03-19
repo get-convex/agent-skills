@@ -2,7 +2,13 @@
 
 ## Executive Summary
 
-Skills measurably improve agent output, but **only when tested with construction tasks** (build from spec). Repair tasks (find and fix bugs) show zero delta because models already know how to fix bugs when pointed at them. The key insight: models **introduce** Convex-specific anti-patterns when building from scratch, and skills prevent those mistakes.
+Skills measurably improve agent output when tested with the right eval format. Three formats show skill impact:
+
+1. **Construction tasks** (build from spec) -- biggest delta (+1.47 avg for perf audit)
+2. **Cascading diagnosis** (vague symptom, multiple root causes) -- strong delta (+0.77 for perf audit)
+3. **Implicit architecture** (feature request requiring non-obvious data shape) -- modest delta (+0.17)
+
+Simple repair tasks (told exactly what's broken) and simple symptom tasks (single root cause) show zero delta because models already know how to fix these.
 
 ## The Breakthrough: Construction vs Repair
 
@@ -89,6 +95,21 @@ Not tested with construction tasks. Repair tasks showed no delta -- both models 
 | Auth | **+0.58** | -0.25 | -0.67 to 0.00 |
 | Migration | **+0.50** | 0.00 | -0.09 to +0.44 |
 | Quickstart | (not tested) | (not tested) | -0.11 to 0.00 |
+
+## Symptom-Based & Implicit Architecture Tasks (Sonnet)
+
+| Task | Type | Baseline | +Skill | Delta |
+|------|------|----------|--------|-------|
+| app-is-laggy | cascading diagnosis | 3.77 | 4.54 | **+0.77** |
+| add-unread-badges | implicit architecture | 3.83 | 4.00 | +0.17 |
+| bandwidth-spike | single symptom | 4.64 | 4.64 | 0.00 |
+| cant-login | single symptom | 4.73 | 4.73 | 0.00 |
+
+**Cascading diagnosis is the sweet spot for perf audit.** When there are multiple interacting problems (heartbeat invalidation + Date.now() + noop writes + hot counter), the skill's systematic approach helps the agent find ALL of them. Without the skill, Sonnet missed the heartbeat isolation pattern and didn't fix all issues.
+
+**Simple single-cause symptoms don't need skills.** Both bandwidth-spike (full doc returns, search scan, N+1) and cant-login (wrong field, missing index, no upsert) -- Sonnet diagnoses and fixes these without help.
+
+**Implicit architecture shows small lift.** Both versions correctly used separate read tracking (not readBy arrays) for unread badges, but neither used maintained counters. The skill needs stronger guidance on counter patterns.
 
 ## Recommendations
 
