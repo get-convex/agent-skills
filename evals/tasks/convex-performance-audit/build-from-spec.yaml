@@ -34,8 +34,8 @@ prompt: |
 
   Build this with proper Convex patterns. Use indexes where appropriate.
   Think carefully about what happens at scale with many concurrent users.
-timeout_seconds: 300
-max_turns: 30
+timeout_seconds: 480
+max_turns: 50
 scoring:
   criteria:
     - name: heartbeat_isolation

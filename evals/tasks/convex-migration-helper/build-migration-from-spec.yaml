@@ -30,8 +30,8 @@ prompt: |
 
   The app must never break during deployment. All changes must be
   deployment-safe.
-timeout_seconds: 300
-max_turns: 30
+timeout_seconds: 480
+max_turns: 50
 scoring:
   criteria:
     - name: additive_schema

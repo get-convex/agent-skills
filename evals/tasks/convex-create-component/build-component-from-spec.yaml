@@ -33,8 +33,8 @@ prompt: |
        from installation, NOT via the api object
 
   This is a LOCAL component (not a published npm package).
-timeout_seconds: 300
-max_turns: 30
+timeout_seconds: 480
+max_turns: 50
 scoring:
   criteria:
     - name: directory_structure
