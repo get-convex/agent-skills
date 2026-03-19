@@ -1,0 +1,49 @@
+name: extract-component
+skill: convex-create-component
+description: >
+  Test whether the agent can extract a reusable Convex component from
+  existing application code.
+prompt: |
+  This Convex project has rate limiting logic mixed into the application code.
+  Extract it into a standalone Convex component called "rate-limiter" with:
+
+  1. A component definition (convex.config.ts) for the rate limiter
+  2. An isolated schema for the rate limiter's internal state (rate limit
+     entries with key, count, windowStart)
+  3. A public API: checkRateLimit(key, limit, windowMs) that returns
+     {allowed: boolean, remaining: number}
+  4. A public API: resetRateLimit(key) that clears the limit for a key
+  5. An app-facing wrapper that installs and exposes the component
+  6. Update the existing code to use the component instead of inline logic
+
+  The component should have clear boundaries: its own tables, no direct
+  access to app tables, and a clean public API.
+timeout_seconds: 300
+max_turns: 30
+scoring:
+  criteria:
+    - name: component_structure
+      weight: 2
+      description: >
+        Component has proper structure: its own convex.config.ts,
+        isolated schema, public API surface, clear separation from app code
+    - name: boundary_correctness
+      weight: 2
+      description: >
+        Component does not access app tables directly. App does not access
+        component internals. Communication happens through the public API only.
+    - name: api_design
+      weight: 1
+      description: >
+        Public API is clean, well-typed with proper args validators,
+        returns useful information (allowed, remaining)
+    - name: integration
+      weight: 1
+      description: >
+        App code is updated to use the component. The component is properly
+        installed and the wrapper exposes the needed functions.
+    - name: would_run
+      weight: 2
+      description: >
+        Code would type-check and run. Correct component patterns,
+        proper imports, valid Convex function definitions.

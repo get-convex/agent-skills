@@ -1,0 +1,46 @@
+name: add-field-migration
+skill: convex-migration-helper
+description: >
+  Test whether the agent can safely migrate an existing Convex schema
+  by adding new fields and backfilling data.
+prompt: |
+  This Convex project has a "products" table. We need to make these changes:
+
+  1. Add an "isActive" boolean field (default true for existing records)
+  2. Add a "slug" string field (derived from the name: lowercase, spaces replaced with hyphens)
+  3. Add an index on "slug" for lookups
+  4. Write a migration that backfills isActive and slug for all existing products
+  5. Update the schema to include the new fields as optional initially
+     (so it works before and after migration)
+
+  The migration should be safe to run while the app is live (zero downtime).
+  Use a paginated approach that processes records in batches to avoid timeout.
+timeout_seconds: 300
+max_turns: 30
+scoring:
+  criteria:
+    - name: schema_evolution
+      weight: 2
+      description: >
+        Schema is updated additively: new fields are v.optional() so existing
+        data remains valid. Index is defined correctly.
+    - name: migration_safety
+      weight: 2
+      description: >
+        Migration uses pagination/batching (not unbounded queries), handles
+        the case where fields already exist, and is idempotent
+    - name: migration_correctness
+      weight: 2
+      description: >
+        Migration correctly sets isActive=true and generates slugs from names.
+        Slug generation handles edge cases (spaces, case).
+    - name: zero_downtime
+      weight: 1
+      description: >
+        Queries/mutations still work during migration because new fields
+        are optional. No breaking changes to existing function signatures.
+    - name: would_run
+      weight: 2
+      description: >
+        Code would type-check and run without modification. Correct Convex
+        mutation patterns, proper ctx.db usage, valid pagination.

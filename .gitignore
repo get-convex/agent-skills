@@ -1,0 +1,4 @@
+node_modules/
+evals/results/*.json
+evals/results/*.md
+!evals/results/.gitkeep

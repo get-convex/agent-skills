@@ -1,0 +1,54 @@
+name: scaffold-react-app
+skill: convex-quickstart
+description: >
+  Test whether the agent can set up a working Convex + React project from scratch.
+  This tests general Convex scaffolding ability, not skill-specific steps.
+prompt: |
+  Create a React + Convex application for tracking bookmarks.
+
+  Requirements:
+  - A "bookmarks" table with url (string), title (string), tags (array of strings), and createdAt (number)
+  - A query that lists all bookmarks, most recent first
+  - A query that filters bookmarks by tag
+  - A mutation to add a bookmark
+  - A mutation to delete a bookmark
+  - A React frontend with a form to add bookmarks and a list to display them
+  - The frontend should use Convex React hooks for real-time updates
+
+  Set up the project so it could be run with `npx convex dev` and a frontend dev server.
+  Do not actually start any dev servers.
+timeout_seconds: 300
+max_turns: 30
+scoring:
+  criteria:
+    - name: project_structure
+      weight: 1
+      description: >
+        Project has correct structure: package.json with convex dependency,
+        convex/ directory, proper file organization
+    - name: schema_correctness
+      weight: 2
+      description: >
+        Schema defines the bookmarks table with correct Convex validators
+        (v.string(), v.array(), v.number()), proper table definition syntax
+    - name: function_correctness
+      weight: 2
+      description: >
+        Query and mutation functions use correct Convex patterns: export with
+        query/mutation constructors, args validators, returns type annotations,
+        correct ctx usage (ctx.db.query, ctx.db.insert, etc.)
+    - name: frontend_integration
+      weight: 1
+      description: >
+        React code properly sets up ConvexProvider, uses useQuery/useMutation hooks,
+        handles loading states, passes correct function references
+    - name: completeness
+      weight: 1
+      description: >
+        All requested features are implemented: both queries, both mutations,
+        the form, and the list display
+    - name: would_run
+      weight: 2
+      description: >
+        Code would type-check and run without modification. No import errors,
+        no undefined variables, no syntax errors, correct API usage

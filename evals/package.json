@@ -1,0 +1,18 @@
+{
+  "name": "agent-skills-evals",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "eval": "tsx run.ts",
+    "score": "tsx score.ts",
+    "report": "tsx report.ts"
+  },
+  "devDependencies": {
+    "typescript": "^5.5.0",
+    "tsx": "^4.19.0",
+    "@anthropic-ai/sdk": "^0.30.0",
+    "openai": "^4.60.0",
+    "yaml": "^2.4.0"
+  }
+}

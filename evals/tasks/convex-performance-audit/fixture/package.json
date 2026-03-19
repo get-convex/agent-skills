@@ -1,0 +1,8 @@
+{
+  "name": "order-system",
+  "version": "0.0.0",
+  "private": true,
+  "dependencies": {
+    "convex": "^1.17.0"
+  }
+}

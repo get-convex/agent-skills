@@ -1,0 +1,47 @@
+name: add-clerk-auth
+skill: convex-setup-auth
+description: >
+  Test whether the agent can add authentication to an existing Convex app.
+  Tests general auth integration ability, not provider-specific steps.
+prompt: |
+  This is an existing Convex project for a notes app. Add user authentication so that:
+
+  - Each note belongs to a user
+  - Users can only see and edit their own notes
+  - There is a getCurrentUser query that returns the authenticated user's info
+  - The schema includes a users table with name, email, and tokenIdentifier
+  - All existing queries and mutations enforce that the user is logged in
+  - If a user is not authenticated, throw an appropriate error
+
+  Use Clerk as the auth provider. Set up the Convex side of the integration
+  (schema, auth helpers, protected functions). You do not need to set up the
+  Clerk dashboard or environment variables, just the code.
+timeout_seconds: 300
+max_turns: 30
+scoring:
+  criteria:
+    - name: user_schema
+      weight: 2
+      description: >
+        Users table is defined with correct validators, has an index on
+        tokenIdentifier for identity resolution
+    - name: auth_helper
+      weight: 2
+      description: >
+        A reusable getCurrentUser helper that uses ctx.auth.getUserIdentity()
+        and resolves the user from the users table via tokenIdentifier
+    - name: access_control
+      weight: 2
+      description: >
+        All data-access functions check authentication and scope data
+        to the current user. Unauthenticated requests throw errors.
+    - name: schema_integration
+      weight: 1
+      description: >
+        Notes table is updated to reference the user (via userId or similar),
+        schema changes are additive and correct
+    - name: would_run
+      weight: 2
+      description: >
+        Code would type-check and run without modification. Correct imports,
+        proper Convex function patterns, no missing references

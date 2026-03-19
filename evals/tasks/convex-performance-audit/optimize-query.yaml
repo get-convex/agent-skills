@@ -1,0 +1,49 @@
+name: optimize-query
+skill: convex-performance-audit
+description: >
+  Test whether the agent can identify and fix performance problems in
+  existing Convex functions.
+prompt: |
+  This Convex project has performance issues. Audit the existing code and fix:
+
+  1. The listOrdersByUser query does a full table scan and filters in JS.
+     It should use an index.
+  2. The getOrderStats query reads all orders to compute counts.
+     It should be optimized to avoid reading excessive data.
+  3. The processOrder mutation writes to multiple tables in a way that
+     could cause OCC (Optimistic Concurrency Control) conflicts under load.
+     Restructure to minimize contention.
+  4. Add appropriate indexes to the schema for the query patterns used.
+
+  Explain each change and why it improves performance.
+timeout_seconds: 300
+max_turns: 30
+scoring:
+  criteria:
+    - name: index_usage
+      weight: 2
+      description: >
+        Indexes are defined in the schema and queries use .withIndex()
+        instead of .filter() for indexed fields. Index definitions match
+        the query patterns.
+    - name: scan_elimination
+      weight: 2
+      description: >
+        Full table scans are replaced with indexed queries. JS-side
+        filtering is moved to indexed queries where possible.
+    - name: contention_reduction
+      weight: 2
+      description: >
+        Write patterns are restructured to reduce OCC conflicts.
+        Techniques like splitting hot counters, reducing write scope,
+        or using separate tables for contended data.
+    - name: correctness_preserved
+      weight: 1
+      description: >
+        Optimizations do not change the functional behavior.
+        Same data is returned, same operations are performed.
+    - name: would_run
+      weight: 2
+      description: >
+        Code would type-check and run without modification.
+        Correct Convex patterns, valid index references.
