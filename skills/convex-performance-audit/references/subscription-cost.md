@@ -140,7 +140,35 @@ const profile = useQuery(
 );
 ```
 
-### 4. Isolate frequently-updated fields into separate documents
+### 4. Don't store per-user state on shared documents
+
+Storing per-user tracking data (read/seen/acknowledged arrays) on the source document causes every user's status update to write to the document, invalidating subscriptions for all other users who read it. This is an O(users^2) invalidation pattern.
+
+```ts
+// Bad: readBy array on the document -- every mark-as-read writes to it,
+// invalidating all queries that read this document for other users
+const items = defineTable({
+  content: v.string(),
+  readBy: v.array(v.id("users")),
+});
+```
+
+```ts
+// Good: separate tracking table -- writes are isolated per user
+const items = defineTable({
+  content: v.string(),
+});
+
+const readReceipts = defineTable({
+  itemId: v.id("items"),
+  userId: v.id("users"),
+  readAt: v.number(),
+}).index("by_item_user", ["itemId", "userId"]);
+```
+
+This applies to any pattern where many users independently track state on a shared resource: read receipts, acknowledgments, votes, reactions, view tracking. Each of these should be a separate row in a tracking table, not an array on the source document.
+
+### 5. Isolate frequently-updated fields into separate documents
 
 If a document is widely read but has a field that changes often, move that field to a separate document. Queries that do not need the field will no longer be invalidated by its writes.
 
@@ -171,7 +199,7 @@ Queries that only need `name` and `email` no longer re-run on every heartbeat. Q
 
 For an even further optimization, if you only need a coarse online/offline boolean rather than the exact `lastSeen` timestamp, add a separate presence document with an `isOnline` flag. Update it immediately when a user comes online, and use a cron to batch-mark users offline when their heartbeat goes stale. This way the presence query only invalidates when online status actually changes, not on every heartbeat.
 
-### 5. Use the aggregate component for counts and sums
+### 6. Use the aggregate component for counts and sums
 
 Reactive global counts (`SELECT COUNT(*)` equivalent) invalidate on every insert or delete to the table. The [`@convex-dev/aggregate`](https://www.npmjs.com/package/@convex-dev/aggregate) component maintains denormalized COUNT, SUM, and MAX values efficiently so you do not need a reactive query scanning the full table.
 
@@ -179,7 +207,7 @@ Use it for leaderboards, totals, "X items" badges, or any stat that would otherw
 
 If the aggregate component is not appropriate, prefer point-in-time reads for global stats, or precomputed summary rows updated by a cron or trigger, over reactive queries that scan large tables.
 
-### 6. Narrow query read sets
+### 7. Narrow query read sets
 
 Queries that return less data and touch fewer documents invalidate less often.
 
@@ -203,7 +231,7 @@ export const listDigests = query({
 
 Writes to fields not in the digest table do not invalidate the digest query.
 
-### 7. Remove `Date.now()` from queries
+### 8. Remove `Date.now()` from queries
 
 Using `Date.now()` inside a query defeats Convex's query cache. The cache is invalidated frequently to avoid showing stale time-dependent results, which increases database work even when the underlying data has not changed.
 
@@ -225,7 +253,7 @@ const releasedPosts = await ctx.db
 
 If the query must compare against a time value, pass it as an explicit argument from the client and round it to a coarse interval (e.g. the most recent minute) so requests within that window share the same cache entry.
 
-### 8. Consider pagination strategy
+### 9. Consider pagination strategy
 
 For long lists where users scroll through many pages:
 
@@ -233,7 +261,7 @@ For long lists where users scroll through many pages:
 - If it does need live updates, accept the subscription cost but limit the number of loaded pages
 - Consider whether older pages can be unloaded as the user scrolls forward
 
-### 9. Separate backend cost from UI churn
+### 10. Separate backend cost from UI churn
 
 If the main problem is loading flash or UI churn when query arguments change, stabilizing the reactive UI behavior may be better than replacing reactivity altogether.
 
