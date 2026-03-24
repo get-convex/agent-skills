@@ -64,6 +64,8 @@ Before contributing, review the core Agent Skills docs:
 
 If your skill bundles scripts, also read [Using scripts in skills](https://agentskills.io/skill-creation/using-scripts).
 
+### Validating Skills
+
 Validate skills by trying to use them in a realistic temp project, not just by reading them.
 
 - Push the skill as far as possible with an agent in a throwaway directory
@@ -71,6 +73,25 @@ Validate skills by trying to use them in a realistic temp project, not just by r
 - Record what worked, where the agent got stuck, and what confused the flow
 - Feed those learnings back into the skill so the next run is better
 - For UI-facing skills such as auth setup, validate the actual browser flow during skill development, not just code generation or a successful build
+
+### Testing with Anthropic's Skill Creator
+
+For a more rigorous approach, use Anthropic's [skill-creator](https://github.com/anthropics/skills/tree/main/skills/skill-creator) skill. It provides a structured loop for testing and iterating on skills:
+
+1. Draft or edit a skill
+2. Define realistic test prompts and run the skill against them (with and without the skill as a baseline)
+3. Grade the outputs with assertions and review them in a browser-based viewer
+4. Improve the skill based on feedback, then repeat
+
+It also includes a description optimizer that tunes the skill's frontmatter description for better triggering accuracy across different phrasings.
+
+Install it in Claude Code:
+
+```bash
+/install-skill https://github.com/anthropics/skills/tree/main/skills/skill-creator
+```
+
+This is especially useful when a skill is complex enough that reading it alone won't tell you if it actually works well in practice.
 
 Each skill follows the [Agent Skills open standard](https://github.com/anthropics/skills):
 
