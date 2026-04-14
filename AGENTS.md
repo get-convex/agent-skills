@@ -7,6 +7,7 @@ Rules for contributing to this repository.
 Skills in this repository should be narrowly focused on a specific task or workflow.
 
 A good skill helps an agent take a concrete action, for example:
+
 - set up authentication
 - design a schema
 - create a Convex function
@@ -17,6 +18,7 @@ Do not create skills that mainly provide generic background information or broad
 Reference material is fine inside a skill when it directly helps complete the task the skill is for.
 
 Before contributing, review the core Agent Skills docs:
+
 - [Overview](https://agentskills.io/home)
 - [What are skills?](https://agentskills.io/what-are-skills)
 - [Specification](https://agentskills.io/specification)
@@ -36,6 +38,7 @@ If the skill uses bundled scripts, also review [Using scripts in skills](https:/
 ## File Structure
 
 Each skill should have:
+
 - Clear heading with brief description
 - "When to Use" section
 - Code examples showing bad vs good patterns
@@ -60,8 +63,6 @@ Each skill should have:
 
 ```ts
 // Bad: description of the problem
- 
 
 // Good: description of the solution
- 
 ```
