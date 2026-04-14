@@ -64,6 +64,11 @@ Before contributing, review the core Agent Skills docs:
 
 If your skill bundles scripts, also read [Using scripts in skills](https://agentskills.io/skill-creation/using-scripts).
 
+Install dependencies once with `npm install`, then use:
+
+- `npm run format` to rewrite files
+- `npm run format-check` to verify formatting before opening a PR
+
 ### Validating Skills
 
 Validate skills by trying to use them in a realistic temp project, not just by reading them.
