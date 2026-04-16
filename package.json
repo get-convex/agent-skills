@@ -3,7 +3,9 @@
   "private": true,
   "scripts": {
     "format": "prettier -w .",
-    "format-check": "prettier -c ."
+    "format-check": "prettier -c .",
+    "publish-skills-manifest": "node scripts/skillsManifest.cjs --publish",
+    "test:skills-manifest": "node --test scripts/skillsManifest.test.cjs"
   },
   "devDependencies": {
     "prettier": "^3.8.2"
