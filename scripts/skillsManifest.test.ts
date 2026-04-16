@@ -1,15 +1,16 @@
-const test = require("node:test");
-const assert = require("node:assert/strict");
-const os = require("node:os");
-const path = require("node:path");
-const fs = require("node:fs/promises");
+import assert from "node:assert/strict";
+import { promises as fs } from "node:fs";
+import os from "node:os";
+import path from "node:path";
+import test from "node:test";
 
-const {
+import {
   buildSkillsManifest,
   hashSkillDirectory,
-} = require("./skillsManifest.cjs");
+  type WriteSkillFile,
+} from "./skillsManifest.ts";
 
-async function withTempDir(callback) {
+async function withTempDir(callback: (tempDir: string) => Promise<void>) {
   const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "skills-manifest-"));
   try {
     await callback(tempDir);
@@ -23,6 +24,11 @@ async function writeSkill({
   directoryName,
   skillName = directoryName,
   extraFiles = [],
+}: {
+  repoRoot: string;
+  directoryName: string;
+  skillName?: string;
+  extraFiles?: WriteSkillFile[];
 }) {
   const skillDir = path.join(repoRoot, "skills", directoryName);
   await fs.mkdir(skillDir, { recursive: true });

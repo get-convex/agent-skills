@@ -4,10 +4,13 @@
   "scripts": {
     "format": "prettier -w .",
     "format-check": "prettier -c .",
-    "publish-skills-manifest": "node scripts/skillsManifest.cjs --publish",
-    "test:skills-manifest": "node --test scripts/skillsManifest.test.cjs"
+    "publish-skills-manifest": "tsx scripts/skillsManifest.ts --publish",
+    "test:skills-manifest": "tsx --test scripts/skillsManifest.test.ts"
   },
   "devDependencies": {
-    "prettier": "^3.8.2"
+    "@types/node": "^25.6.0",
+    "prettier": "^3.8.2",
+    "tsx": "^4.21.0",
+    "typescript": "^6.0.2"
   }
 }

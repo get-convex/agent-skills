@@ -1,12 +1,32 @@
-const crypto = require("node:crypto");
-const fs = require("node:fs/promises");
-const path = require("node:path");
-const { execFileSync } = require("node:child_process");
+import crypto from "node:crypto";
+import { execFileSync } from "node:child_process";
+import { promises as fs } from "node:fs";
+import path from "node:path";
+import { fileURLToPath, pathToFileURL } from "node:url";
 
 const DEFAULT_PUBLISH_URL =
   "https://version.convex.dev/v1/agent_skills/publish";
 
-function extractSkillName({ content, directoryName }) {
+type SkillManifestEntry = {
+  skillName: string;
+  directoryName: string;
+  skillHash: string;
+};
+
+type SkillsManifest = {
+  repoSha: string;
+  skills: SkillManifestEntry[];
+};
+
+type WriteSkillFile = [relativePath: string, content: string];
+
+export function extractSkillName({
+  content,
+  directoryName,
+}: {
+  content: string;
+  directoryName: string;
+}) {
   const match = content.match(/^---[\s\S]*?^name:\s*(.+?)\s*$/m);
   if (!match) {
     throw new Error(
@@ -16,7 +36,11 @@ function extractSkillName({ content, directoryName }) {
   return match[1].trim();
 }
 
-async function listSkillDirectories({ skillsRoot }) {
+export async function listSkillDirectories({
+  skillsRoot,
+}: {
+  skillsRoot: string;
+}) {
   const dirents = await fs.readdir(skillsRoot, { withFileTypes: true });
   return dirents
     .filter((dirent) => dirent.isDirectory())
@@ -24,9 +48,15 @@ async function listSkillDirectories({ skillsRoot }) {
     .sort((a, b) => a.localeCompare(b));
 }
 
-async function listFilesRecursively({ rootDir, currentDir = rootDir }) {
+export async function listFilesRecursively({
+  rootDir,
+  currentDir = rootDir,
+}: {
+  rootDir: string;
+  currentDir?: string;
+}): Promise<string[]> {
   const dirents = await fs.readdir(currentDir, { withFileTypes: true });
-  const files = [];
+  const files: string[] = [];
 
   for (const dirent of dirents.sort((a, b) => a.name.localeCompare(b.name))) {
     const absolutePath = path.join(currentDir, dirent.name);
@@ -47,7 +77,7 @@ async function listFilesRecursively({ rootDir, currentDir = rootDir }) {
   return files;
 }
 
-async function hashSkillDirectory({ skillDir }) {
+export async function hashSkillDirectory({ skillDir }: { skillDir: string }) {
   const files = await listFilesRecursively({ rootDir: skillDir });
   const hash = crypto.createHash("sha256");
 
@@ -61,10 +91,16 @@ async function hashSkillDirectory({ skillDir }) {
   return hash.digest("hex");
 }
 
-async function buildSkillsManifest({ repoRoot, repoSha }) {
+export async function buildSkillsManifest({
+  repoRoot,
+  repoSha,
+}: {
+  repoRoot: string;
+  repoSha: string;
+}): Promise<SkillsManifest> {
   const skillsRoot = path.join(repoRoot, "skills");
   const directoryNames = await listSkillDirectories({ skillsRoot });
-  const skills = [];
+  const skills: SkillManifestEntry[] = [];
 
   for (const directoryName of directoryNames) {
     const skillDir = path.join(skillsRoot, directoryName);
@@ -87,7 +123,7 @@ async function buildSkillsManifest({ repoRoot, repoSha }) {
   return { repoSha, skills };
 }
 
-function readRepoSha({ repoRoot }) {
+export function readRepoSha({ repoRoot }: { repoRoot: string }) {
   if (process.env.GITHUB_SHA) return process.env.GITHUB_SHA;
   return execFileSync("git", ["rev-parse", "HEAD"], {
     cwd: repoRoot,
@@ -95,7 +131,15 @@ function readRepoSha({ repoRoot }) {
   }).trim();
 }
 
-async function publishSkillsManifest({ endpoint, token, manifest }) {
+export async function publishSkillsManifest({
+  endpoint,
+  token,
+  manifest,
+}: {
+  endpoint: string;
+  token: string;
+  manifest: SkillsManifest;
+}) {
   const response = await fetch(endpoint, {
     method: "POST",
     headers: {
@@ -114,7 +158,10 @@ async function publishSkillsManifest({ endpoint, token, manifest }) {
 }
 
 async function main() {
-  const repoRoot = path.resolve(__dirname, "..");
+  const repoRoot = path.resolve(
+    path.dirname(fileURLToPath(import.meta.url)),
+    "..",
+  );
   const repoSha = readRepoSha({ repoRoot });
   const manifest = await buildSkillsManifest({ repoRoot, repoSha });
   const shouldPublish = process.argv.includes("--publish");
@@ -138,19 +185,15 @@ async function main() {
   process.stdout.write(JSON.stringify(result, null, 2) + "\n");
 }
 
-if (require.main === module) {
-  main().catch((error) => {
+const isMainModule =
+  process.argv[1] !== undefined &&
+  import.meta.url === pathToFileURL(process.argv[1]).href;
+
+if (isMainModule) {
+  main().catch((error: unknown) => {
     console.error(error);
     process.exitCode = 1;
   });
 }
 
-module.exports = {
-  buildSkillsManifest,
-  extractSkillName,
-  hashSkillDirectory,
-  listFilesRecursively,
-  listSkillDirectories,
-  publishSkillsManifest,
-  readRepoSha,
-};
+export type { SkillManifestEntry, SkillsManifest, WriteSkillFile };
