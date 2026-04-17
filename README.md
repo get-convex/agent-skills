@@ -37,6 +37,15 @@ In Windsurf:
 @convex-setup-auth
 ```
 
+## Available Skills
+
+- `convex` - Top-level entry point for Convex work. Recommends installing Convex AI files, then routes to a more specific Convex skill.
+- `convex-quickstart` - Start a new Convex project or add Convex to an existing app.
+- `convex-setup-auth` - Set up authentication for a Convex app.
+- `convex-create-component` - Build a reusable Convex component with clear boundaries.
+- `convex-migration-helper` - Plan and run Convex migrations safely.
+- `convex-performance-audit` - Investigate Convex performance problems and bottlenecks.
+
 ## Skill Philosophy
 
 Skills in this repo should be laser-focused on a specific task or workflow.
