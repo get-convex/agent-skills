@@ -31,4 +31,5 @@ jobs:
       - run: npm ci
       - run: npm run publish-skills-manifest
         env:
-          VERSION_CONVEX_DEV_AGENT_SKILLS_SYNC_TOKEN: ${{ secrets.VERSION_CONVEX_DEV_AGENT_SKILLS_SYNC_TOKEN }}
+          VERSION_CONVEX_DEV_AGENT_SKILLS_SYNC_TOKEN:
+            ${{ secrets.VERSION_CONVEX_DEV_AGENT_SKILLS_SYNC_TOKEN }}
