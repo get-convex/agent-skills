@@ -39,12 +39,16 @@ In Windsurf:
 
 ## Available Skills
 
-- `convex` - Top-level entry point for Convex work. Recommends installing Convex AI files, then routes to a more specific Convex skill.
-- `convex-quickstart` - Start a new Convex project or add Convex to an existing app.
+- `convex` - Top-level entry point for Convex work. Recommends installing Convex
+  AI files, then routes to a more specific Convex skill.
+- `convex-quickstart` - Start a new Convex project or add Convex to an existing
+  app.
 - `convex-setup-auth` - Set up authentication for a Convex app.
-- `convex-create-component` - Build a reusable Convex component with clear boundaries.
+- `convex-create-component` - Build a reusable Convex component with clear
+  boundaries.
 - `convex-migration-helper` - Plan and run Convex migrations safely.
-- `convex-performance-audit` - Investigate Convex performance problems and bottlenecks.
+- `convex-performance-audit` - Investigate Convex performance problems and
+  bottlenecks.
 
 ## Skill Philosophy
 
@@ -57,9 +61,12 @@ A good skill helps an agent take action, for example:
 - perform a migration
 - diagnose performance issues
 
-A skill should not exist just to provide generic background information. If content is mostly reference material, it should usually live in documentation, not as a standalone skill.
+A skill should not exist just to provide generic background information. If
+content is mostly reference material, it should usually live in documentation,
+not as a standalone skill.
 
-Reference material is still useful inside a skill, but only when it helps the agent complete a concrete task.
+Reference material is still useful inside a skill, but only when it helps the
+agent complete a concrete task.
 
 ## Contributing
 
@@ -71,7 +78,8 @@ Before contributing, review the core Agent Skills docs:
 - [Optimizing skill descriptions](https://agentskills.io/skill-creation/optimizing-descriptions)
 - [Evaluating skill output quality](https://agentskills.io/skill-creation/evaluating-skills)
 
-If your skill bundles scripts, also read [Using scripts in skills](https://agentskills.io/skill-creation/using-scripts).
+If your skill bundles scripts, also read
+[Using scripts in skills](https://agentskills.io/skill-creation/using-scripts).
 
 Install dependencies once with `npm install`, then use:
 
@@ -80,24 +88,31 @@ Install dependencies once with `npm install`, then use:
 
 ### Validating Skills
 
-Validate skills by trying to use them in a realistic temp project, not just by reading them.
+Validate skills by trying to use them in a realistic temp project, not just by
+reading them.
 
 - Push the skill as far as possible with an agent in a throwaway directory
-- If a human must intervene, ask explicitly for the exact action needed and then continue
+- If a human must intervene, ask explicitly for the exact action needed and then
+  continue
 - Record what worked, where the agent got stuck, and what confused the flow
 - Feed those learnings back into the skill so the next run is better
-- For UI-facing skills such as auth setup, validate the actual browser flow during skill development, not just code generation or a successful build
+- For UI-facing skills such as auth setup, validate the actual browser flow
+  during skill development, not just code generation or a successful build
 
 ### Testing with Anthropic's Skill Creator
 
-For a more rigorous approach, use Anthropic's [skill-creator](https://github.com/anthropics/skills/tree/main/skills/skill-creator) skill. It provides a structured loop for testing and iterating on skills:
+For a more rigorous approach, use Anthropic's
+[skill-creator](https://github.com/anthropics/skills/tree/main/skills/skill-creator)
+skill. It provides a structured loop for testing and iterating on skills:
 
 1. Draft or edit a skill
-2. Define realistic test prompts and run the skill against them (with and without the skill as a baseline)
+2. Define realistic test prompts and run the skill against them (with and
+   without the skill as a baseline)
 3. Grade the outputs with assertions and review them in a browser-based viewer
 4. Improve the skill based on feedback, then repeat
 
-It also includes a description optimizer that tunes the skill's frontmatter description for better triggering accuracy across different phrasings.
+It also includes a description optimizer that tunes the skill's frontmatter
+description for better triggering accuracy across different phrasings.
 
 Install it in Claude Code:
 
@@ -105,9 +120,11 @@ Install it in Claude Code:
 /install-skill https://github.com/anthropics/skills/tree/main/skills/skill-creator
 ```
 
-This is especially useful when a skill is complex enough that reading it alone won't tell you if it actually works well in practice.
+This is especially useful when a skill is complex enough that reading it alone
+won't tell you if it actually works well in practice.
 
-Each skill follows the [Agent Skills open standard](https://github.com/anthropics/skills):
+Each skill follows the
+[Agent Skills open standard](https://github.com/anthropics/skills):
 
 1. Create a directory under `skills/` with the skill name
 2. Add a `SKILL.md` file with YAML frontmatter:
@@ -119,4 +136,5 @@ Each skill follows the [Agent Skills open standard](https://github.com/anthropic
    ```
 3. Include comprehensive examples with bad/good patterns
 4. Add a checklist at the end of each skill
-5. Update this root `README.md` whenever skills are added, removed, renamed, or substantially repositioned
+5. Update this root `README.md` whenever skills are added, removed, renamed, or
+   substantially repositioned

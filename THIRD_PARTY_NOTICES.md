@@ -2,7 +2,8 @@
 
 ## Heroicons
 
-This repository vendors a small number of SVG icons from [Heroicons](https://heroicons.com/) for skill metadata assets.
+This repository vendors a small number of SVG icons from
+[Heroicons](https://heroicons.com/) for skill metadata assets.
 
 - Source: [tailwindlabs/heroicons](https://github.com/tailwindlabs/heroicons)
 - License: MIT
