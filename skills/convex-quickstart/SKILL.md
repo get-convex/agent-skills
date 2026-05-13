@@ -27,8 +27,9 @@ Set up a working Convex project as fast as possible.
 1. Determine the starting point: new project or existing app
 2. If new project, pick a template and scaffold with `npm create convex@latest`
 3. If existing app, install `convex` and wire up the provider
-4. Run `npx convex dev` to connect a deployment and start the dev loop
-5. Verify the setup works
+4. Run `npx convex init` to provision a local anonymous deployment (one-shot, exits cleanly)
+5. Ask the user (or, for cloud agents, start in the background) `npx convex dev` for the long-running watcher
+6. Verify the setup works
 
 ## Path 1: New Project (Recommended)
 
@@ -77,30 +78,42 @@ npm create convex@latest . -- -t react-vite-shadcn
 npm install
 ```
 
-### Start the dev loop
+### Provision the deployment
+
+Run this yourself — it is a one-shot command that exits cleanly:
+
+```bash
+npx convex init
+```
+
+In a non-TTY environment (which is true for almost every agent run), `convex
+init` automatically provisions an *anonymous* local Convex backend bound to
+`127.0.0.1`, writes `CONVEX_DEPLOYMENT` and the framework's `*_CONVEX_URL`
+variables to `.env.local`, and creates `convex/_generated/`. No browser login,
+no team/project prompts.
+
+To be explicit (recommended), set `CONVEX_AGENT_MODE=anonymous` so the
+behavior does not depend on TTY detection:
+
+```bash
+CONVEX_AGENT_MODE=anonymous npx convex init
+```
+
+The deployment lives under `~/.convex/` and persists across runs.
+
+### Start the dev watcher
 
 `npx convex dev` is a long-running watcher process that syncs backend code to a
-Convex deployment on every save. It also requires authentication on first run
-(browser-based OAuth). Both of these make it unsuitable for an agent to run
-directly.
+Convex deployment on every save. Because it does not exit, the agent should
+not run it in the foreground.
 
-**Ask the user to run this themselves:**
-
-Tell the user to run `npx convex dev` in their terminal. On first run it will
-prompt them to log in or develop anonymously. Once running, it will:
-
-- Create a Convex project and dev deployment
-- Write the deployment URL to `.env.local`
-- Create the `convex/` directory with generated types
-- Watch for changes and sync continuously
-
-The user should keep `npx convex dev` running in the background while you work
-on code. The watcher will automatically pick up any files you create or edit in
-`convex/`.
-
-**Exception - cloud or headless agents:** Environments that cannot open a
-browser for interactive login should use Agent Mode (see below) to run
-anonymously without user interaction.
+- **Local development (user is at the keyboard):** ask the user to run
+  `npx convex dev` in a separate terminal. The deployment provisioned by
+  `convex init` above is already selected, so it picks up immediately with no
+  prompts.
+- **Cloud or headless agents:** start `npx convex dev` (or `npm run dev`) in
+  the background. The watcher uses the deployment that `convex init` already
+  set up.
 
 ### Start the frontend
 
@@ -146,12 +159,18 @@ the backend.
 npm install convex
 ```
 
-### Initialize and start dev loop
+### Initialize the deployment
 
-Ask the user to run `npx convex dev` in their terminal. This handles login,
-creates the `convex/` directory, writes the deployment URL to `.env.local`, and
-starts the file watcher. See the notes in Path 1 about why the agent should not
-run this directly.
+Run `npx convex init` yourself to provision a local anonymous deployment, write
+`.env.local`, and generate types. This is one-shot and exits:
+
+```bash
+npx convex init
+```
+
+Then either ask the user to start `npx convex dev` in a terminal, or — for
+cloud/headless agents — start it in the background. See "Start the dev
+watcher" above for why the agent should not run the watcher in the foreground.
 
 ### Wire up the provider
 
@@ -255,28 +274,38 @@ The env var name depends on the framework:
 
 `npx convex dev` writes the correct variable to `.env.local` automatically.
 
-## Agent Mode (Cloud and Headless Agents)
+## Agent Mode
 
-When running in a cloud or headless agent environment where interactive browser
-login is not possible, set `CONVEX_AGENT_MODE=anonymous` to use a local
-anonymous deployment.
-
-Add `CONVEX_AGENT_MODE=anonymous` to `.env.local`, or set it inline:
+`CONVEX_AGENT_MODE=anonymous` forces an unauthenticated local backend. It is
+already the implicit default for any non-TTY run of `npx convex init` or
+`npx convex dev`, but set it explicitly so the behavior does not depend on
+TTY detection:
 
 ```bash
-CONVEX_AGENT_MODE=anonymous npx convex dev
+CONVEX_AGENT_MODE=anonymous npx convex init
 ```
 
-This runs a local Convex backend on the VM without requiring authentication, and
-avoids conflicting with the user's personal dev deployment.
+Use it for:
+
+- Any AI coding agent (local or cloud).
+- CI-like setup scripts.
+- Cases where the user is logged in but you do not want to touch their personal
+  dev deployment.
+
+The resulting backend runs on `127.0.0.1` and is not associated with any team
+or project until the user later claims it via `npx convex login` and the
+`npx convex deployment` commands.
 
 ## Verify the Setup
 
 After setup, confirm everything is working:
 
-1. The user confirms `npx convex dev` is running without errors
+1. `npx convex init` exited without errors
 2. The `convex/_generated/` directory exists and has `api.ts` and `server.ts`
-3. `.env.local` contains the deployment URL
+3. `.env.local` contains a `CONVEX_DEPLOYMENT` value and the framework's
+   `*_CONVEX_URL` variable
+4. (If applicable) `npx convex dev` is running without errors in another
+   terminal or in the background
 
 ## Writing Your First Function
 
@@ -371,7 +400,8 @@ This pushes to the production deployment, which is separate from dev. Do not use
 - [ ] If new project: scaffolded with `npm create convex@latest` using
       appropriate template
 - [ ] If existing app: installed `convex` and wired up the provider
-- [ ] User has `npx convex dev` running and connected to a deployment
+- [ ] Agent ran `npx convex init` and the anonymous deployment is provisioned
+- [ ] `npx convex dev` is running (user-launched terminal, or background for cloud agents)
 - [ ] `convex/_generated/` directory exists with types
 - [ ] `.env.local` has the deployment URL
 - [ ] Verified a basic query/mutation round-trip works
