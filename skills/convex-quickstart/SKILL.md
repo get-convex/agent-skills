@@ -32,7 +32,9 @@ Set up a working Convex project as fast as possible.
    in one shot, exiting cleanly. The output tells the agent whether the
    schema and functions are valid.
 5. Ask the user (or, for cloud agents, start in the background) `npm run dev`
-   — Convex templates wire the watcher and the frontend into a single command
+   — Convex templates wire the watcher and the frontend into a single
+   command. If the project has no combined dev script, use `npx convex dev`
+   for the watcher and run the frontend separately.
 6. Verify the setup works
 
 ## Path 1: New Project (Recommended)
@@ -120,19 +122,35 @@ one-time setup (e.g. minting auth keys). Use it *in addition to* `convex dev
 
 ### Start the dev loop
 
-In Convex templates, `npm run dev` runs both the Convex watcher and the
+In most Convex templates, `npm run dev` runs both the Convex watcher and the
 frontend dev server together (typically `convex dev --start 'vite --open'` or
-the Next.js equivalent). That is the command the user should run — not
-`npx convex dev` directly.
+the Next.js equivalent). That is what the user should run.
 
-Because `npm run dev` is long-running, the agent should not invoke it in the
-foreground. Two options:
+```bash
+npm run dev
+```
+
+If the project does not have a combined `dev` script — e.g. the `bare`
+template, or an existing app where you haven't wired the frontend dev server
+into Convex's `--start` flag — the user can run the Convex watcher directly:
+
+```bash
+npx convex dev
+```
+
+`npx convex dev` is the same long-running watcher `npm run dev` invokes under
+the hood; it just doesn't start the frontend. Use it when there is no
+frontend, or when the user prefers to run the frontend in a separate terminal.
+
+Either way, the agent should not invoke the watcher in the foreground because
+it does not exit. Two options:
 
 - **Local development (user is at the keyboard):** ask the user to run
-  `npm run dev` in a terminal. The deployment provisioned by `convex init`
-  above is already selected, so the Convex watcher picks up immediately with
-  no prompts, and the frontend starts in the same command.
-- **Cloud or headless agents:** start `npm run dev` in the background.
+  `npm run dev` (or `npx convex dev`) in a terminal. The deployment
+  provisioned by `convex dev --once` above is already selected, so the
+  watcher picks up immediately with no prompts.
+- **Cloud or headless agents:** start `npm run dev` (or `npx convex dev`) in
+  the background.
 
 Vite apps serve on `http://localhost:5173`, Next.js on `http://localhost:3000`.
 
@@ -183,12 +201,18 @@ npx convex dev --once
 The output tells you whether the schema and functions are valid — use it as
 your feedback loop while iterating.
 
-Then ask the user to run `npm run dev` in a terminal (or, for cloud/headless
-agents, start it in the background). If the existing app's `npm run dev`
-doesn't already include the Convex watcher, add `convex dev --start '<existing
-dev command>'` to `package.json`'s `dev` script — that's the standard pattern
-Convex templates use to run both together. See "Start the dev loop" above for
-why the agent should not run the watcher in the foreground.
+Then ask the user to start the watcher (or, for cloud/headless agents, start
+it in the background). You have two options:
+
+- **Wire Convex into `npm run dev`** — change the existing app's `dev` script
+  to `convex dev --start '<existing dev command>'`. That's the standard
+  pattern Convex templates use; the user then runs a single `npm run dev` to
+  start both.
+- **Run them separately** — leave `npm run dev` for the frontend and tell the
+  user to run `npx convex dev` in a second terminal for the Convex watcher.
+
+See "Start the dev loop" above for why the agent should not run the watcher
+in the foreground.
 
 ### Wire up the provider
 
@@ -323,8 +347,8 @@ After setup, confirm everything is working:
 2. The `convex/_generated/` directory exists and has `api.ts` and `server.ts`
 3. `.env.local` contains a `CONVEX_DEPLOYMENT` value and the framework's
    `*_CONVEX_URL` variable
-4. (If applicable) `npm run dev` is running without errors in another
-   terminal or in the background
+4. (If applicable) `npm run dev` (or `npx convex dev` for the watcher alone)
+   is running without errors in another terminal or in the background
 
 ## Writing Your First Function
 
@@ -420,7 +444,8 @@ This pushes to the production deployment, which is separate from dev. Do not use
       appropriate template
 - [ ] If existing app: installed `convex` and wired up the provider
 - [ ] Agent ran `npx convex dev --once`: deployment provisioned, code pushed, typecheck clean
-- [ ] `npm run dev` is running (user-launched terminal, or background for cloud agents)
+- [ ] `npm run dev` (or `npx convex dev` for the watcher alone) is running
+      — user-launched terminal, or background for cloud agents
 - [ ] `convex/_generated/` directory exists with types
 - [ ] `.env.local` has the deployment URL
 - [ ] Verified a basic query/mutation round-trip works
