@@ -1,0 +1,6 @@
+interface:
+  display_name: "Mike Convex Thumbnail"
+  short_description: "Generate Mike-style Convex YouTube thumbnails"
+  default_prompt:
+    "Use $mike-convex-thumbnail to make a YouTube thumbnail for this Convex
+    video."

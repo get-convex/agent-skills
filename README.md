@@ -49,6 +49,8 @@ In Windsurf:
 - `convex-migration-helper` - Plan and run Convex migrations safely.
 - `convex-performance-audit` - Investigate Convex performance problems and
   bottlenecks.
+- `mike-convex-thumbnail` - Generate Mike-style Convex YouTube thumbnails from
+  local Mike photo cutouts and Convex logo assets.
 
 ## Skill Philosophy
 
