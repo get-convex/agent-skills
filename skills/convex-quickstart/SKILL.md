@@ -36,7 +36,7 @@ no auth pre-bake.
   directory. Write ZERO scaffold/documentation files (no START_HERE.md,
   ARCHITECTURE.md, MANIFEST.txt, README walls) unless explicitly asked. "Build
   me a backend" means code, not ceremony.
-- Data access + imports — before writing any convex/*.ts: never an unbounded
+- Data access + imports — before writing any convex/\*.ts: never an unbounded
   `.collect()` on a table that can grow — use `.withIndex(...)` and
   `.paginate(...)`/`.take(n)`. Use an index, not `.filter()`, for anything that
   would be a SQL WHERE. `.withIndex(...)` callbacks only have

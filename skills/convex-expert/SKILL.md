@@ -22,7 +22,7 @@ decoder that generic models routinely get wrong.
 ## Workflow
 
 1. When about to write or edit any file under convex/: read convex/schema.ts
-   first (and convex/_generated/ai/guidelines.md if present).
+   first (and convex/\_generated/ai/guidelines.md if present).
 2. Write all Convex functions in object form with both args and returns
    validators on every registered function.
 3. Use withIndex(...) for every read path — never .filter() for anything that
@@ -36,8 +36,8 @@ decoder that generic models routinely get wrong.
 
 ## Rules
 
-- DATA ACCESS + IMPORTS — read before writing any convex/*.ts (front-loaded, not
-  a post-hoc lint):
+- DATA ACCESS + IMPORTS — read before writing any convex/\*.ts (front-loaded,
+  not a post-hoc lint):
 - Never an unbounded `.collect()` on a table that can grow — use
   `.withIndex(...)` and `.paginate(paginationOptsValidator)`/`.take(n)` instead.
   This is the single most common Convex deploy-blocking and perf defect.
@@ -62,9 +62,9 @@ decoder that generic models routinely get wrong.
   (use null).
 - Never add a required field to a populated table — add v.optional(...) first,
   backfill, then tighten.
-- Never include _creationTime as a column in a custom index (reserved; causes
+- Never include \_creationTime as a column in a custom index (reserved; causes
   IndexNameReserved error).
-- Never store storage URLs in tables — store the Id<'_storage'> and call
+- Never store storage URLs in tables — store the Id<'\_storage'> and call
   ctx.storage.getUrl(id) on read.
 - Mutations cannot fetch — all external IO goes in actions; persist via
   ctx.runMutation(internal.x.y).

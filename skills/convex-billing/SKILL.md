@@ -26,8 +26,8 @@ a query.
    export default app;
    ```
 3. Store Stripe keys in Convex env (use the `env` micro power):
-   `STRIPE_SECRET_KEY` (sk_test_… / sk_live_…) and `STRIPE_WEBHOOK_SECRET`
-   (whsec_…).
+   `STRIPE_SECRET_KEY` (sk*test*… / sk*live*…) and `STRIPE_WEBHOOK_SECRET`
+   (whsec\_…).
 4. Create `convex/http.ts` to register the webhook route (the component handles
    signature verification automatically):
    ```ts

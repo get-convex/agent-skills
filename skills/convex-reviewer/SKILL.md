@@ -19,7 +19,7 @@ anti-patterns with severity (Critical / Important / Suggestion).
 1. First pass — Security: verify all public functions check
    ctx.auth.getUserIdentity(), verify resource ownership before reads/writes,
    confirm no client-provided user IDs are trusted, confirm scheduled functions
-   target internal.* not api.*.
+   target internal._ not api._.
 2. Second pass — Performance: confirm no .filter() on DB queries (withIndex
    required), verify all foreign-key fields have indexes, confirm no Date.now()
    in query handlers, confirm .collect() is not used on unbounded queries.
@@ -36,5 +36,5 @@ anti-patterns with severity (Critical / Important / Suggestion).
 - Flag .filter() on DB queries as Important — it is a full table scan.
 - Flag Date.now() in query handlers as Important — it breaks reactivity.
 - Flag missing args or returns validators as Important.
-- Flag scheduling to api.* (not internal.*) as Important.
+- Flag scheduling to api._ (not internal._) as Important.
 - Always explain why a change is needed, not just what to change.

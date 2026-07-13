@@ -35,5 +35,5 @@ next.
 - Never upgrade without an explicit user yes — not even a minor version.
 - Gate each component individually before moving to the next.
 - breaking:true upgrades require a snapshot (commit or branch) before applying.
-- Do not auto-republish a live *.convex.app site after upgrading without user
+- Do not auto-republish a live \*.convex.app site after upgrading without user
   confirmation.

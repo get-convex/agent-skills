@@ -43,8 +43,8 @@ pattern — it applies the one already documented as the platform's canonical fi
    internalize-and-defer move. Only when the foundation exists (both
    auth.config.ts and a subject-keyed users table are present) do you proceed to
    inject requireIdentity/requireOwner in steps 1-3.
-1. SCAN (deterministic, objective-first): for every convex/**/*.ts file (skip
-   convex/_generated/ and .d.ts), grep for the four shapes: (a)
+1. SCAN (deterministic, objective-first): for every convex/\*_/_.ts file (skip
+   convex/\_generated/ and .d.ts), grep for the four shapes: (a)
    identity-from-arg: a public `query(`/`mutation(` object whose `args` block
    declares `userId`/`actorId`/`ownerId`/`authorId`/`accountId` typed
    `v.id(...)`, where the function's whole block (args + handler) has zero
@@ -124,7 +124,7 @@ pattern — it applies the one already documented as the platform's canonical fi
 - Identity always comes from ctx.auth, never from a client-supplied argument —
   the one legitimate exception is an
   internalQuery/internalMutation/internalAction that is never exposed publicly.
-- Every read or mutate keyed by an _id argument must verify ownership
+- Every read or mutate keyed by an \_id argument must verify ownership
   server-side (requireOwner or an inlined equivalent comparison) before touching
   the row — being logged in is not the same as owning this row.
 - Any v.id(...) argument a public mutation uses as a foreign key when inserting
