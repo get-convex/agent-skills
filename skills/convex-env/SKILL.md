@@ -7,7 +7,8 @@ description: "Set and wire Convex deployment env vars / secrets for the app."
 
 # Manage env vars + secrets
 
-Store secrets as Convex deployment env vars (npx convex env set), read them with process.env in actions, never commit them.
+Store secrets as Convex deployment env vars (npx convex env set), read them with
+process.env in actions, never commit them.
 
 ## Workflow
 

@@ -7,7 +7,8 @@ description: "Add recurring scheduled jobs (crons) to the Convex app."
 
 # Add scheduled jobs (crons)
 
-Define recurring jobs in convex/crons.ts targeting internal functions, with sane intervals and idempotent handlers.
+Define recurring jobs in convex/crons.ts targeting internal functions, with sane
+intervals and idempotent handlers.
 
 ## Workflow
 
