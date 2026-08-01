@@ -1,0 +1,6 @@
+# skills/ is GENERATED from the convex-agents hub (generators/agent-skills.mjs)
+# and byte-compared by its drift gate; prettier's prose-wrap also mangles glob
+# and regex text in skill prose (e.g. convex/**/*.ts). Do not format it.
+# convex-create-component is the one hand-maintained skill and stays formatted.
+skills/
+!skills/convex-create-component/
