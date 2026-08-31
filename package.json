@@ -1,6 +1,7 @@
 {
   "name": "agent-skills",
   "private": true,
+  "license": "Apache-2.0",
   "scripts": {
     "format": "prettier -w .",
     "format-check": "prettier -c .",

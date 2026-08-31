@@ -2,6 +2,16 @@
 
 Agent skills for common Convex workflows.
 
+## License
+
+Unless otherwise noted, all original content in this repository is licensed
+under the [Apache License 2.0](LICENSE). This includes the skill instructions,
+reference documentation, and source code in revisions that include this license.
+It does not retroactively change the licensing of earlier revisions.
+
+Third-party materials remain under their respective licenses. See
+[THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) for details.
+
 ## Install
 
 ```bash
