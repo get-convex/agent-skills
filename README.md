@@ -91,10 +91,10 @@ Before contributing, review the core Agent Skills docs:
 If your skill bundles scripts, also read
 [Using scripts in skills](https://agentskills.io/skill-creation/using-scripts).
 
-Install dependencies once with `npm install`, then use:
+Install dependencies once with `pnpm install`, then use:
 
-- `npm run format` to rewrite files
-- `npm run format-check` to verify formatting before opening a PR
+- `pnpm format` to rewrite files
+- `pnpm format-check` to verify formatting before opening a PR
 
 ### Validating Skills
 

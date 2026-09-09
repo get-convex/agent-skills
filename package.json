@@ -2,6 +2,7 @@
   "name": "agent-skills",
   "private": true,
   "license": "Apache-2.0",
+  "packageManager": "pnpm@12.3.4",
   "scripts": {
     "format": "prettier -w .",
     "format-check": "prettier -c .",

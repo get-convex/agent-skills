@@ -11,12 +11,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: npm
-      - run: npm ci
-      - run: npm run format-check
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm format-check
 
   publish-skills-manifest:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
@@ -24,12 +25,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: npm
-      - run: npm ci
-      - run: npm run publish-skills-manifest
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm publish-skills-manifest
         env:
           VERSION_CONVEX_DEV_AGENT_SKILLS_SYNC_TOKEN:
             ${{ secrets.VERSION_CONVEX_DEV_AGENT_SKILLS_SYNC_TOKEN }}
